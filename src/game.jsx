@@ -6,7 +6,7 @@ const { useState, useEffect, useRef } = React;
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "1.1";
+const VERSION = "2.0";
 const SPEICHER_KEY = "florentina-pokemon";
 
 /* ------------------------------------------------------------
@@ -55,79 +55,76 @@ function typFaktor(angreiferTyp, verteidigerTyp) {
    Pikachu und Lapras entwickeln sich nicht — sie werden durch
    EP staerker, ohne die Form zu wechseln.
    ------------------------------------------------------------ */
-const EP_STUFE_2 = 7;
-const EP_STUFE_3 = 15;
-
 const TEAM = [
   {
     id: "pikachu", typ: "elektro", attacke: "Donnerschock",
-    stufen: [{ name: "Pikachu", emoji: "⚡", ab: 0, basis: 10, hp: 36 }],
+    stufen: [{ name: "Pikachu", emoji: "⚡", basis: 10, hp: 36 }],
     text: "Dein Partner von der ersten Minute an.",
   },
   {
     id: "bisasam", typ: "pflanze", attacke: "Rankenhieb",
     stufen: [
-      { name: "Bisasam", emoji: "🌱", ab: 0, basis: 7, hp: 34 },
-      { name: "Bisaknosp", emoji: "🌿", ab: EP_STUFE_2, basis: 11, hp: 42 },
-      { name: "Bisaflor", emoji: "🌺", ab: EP_STUFE_3, basis: 15, hp: 52 },
+      { name: "Bisasam", emoji: "🌱", basis: 7, hp: 34 },
+      { name: "Bisaknosp", emoji: "🌿", basis: 11, hp: 42 },
+      { name: "Bisaflor", emoji: "🌺", basis: 15, hp: 52 },
     ],
     text: "Die Knospe auf dem Rücken wächst mit jedem Rätsel.",
   },
   {
     id: "schiggy", typ: "wasser", attacke: "Aquaknarre",
     stufen: [
-      { name: "Schiggy", emoji: "💧", ab: 0, basis: 7, hp: 34 },
-      { name: "Schillok", emoji: "🌊", ab: EP_STUFE_2, basis: 11, hp: 42 },
-      { name: "Turtok", emoji: "🐢", ab: EP_STUFE_3, basis: 15, hp: 54 },
+      { name: "Schiggy", emoji: "💧", basis: 7, hp: 34 },
+      { name: "Schillok", emoji: "🌊", basis: 11, hp: 42 },
+      { name: "Turtok", emoji: "🐢", basis: 15, hp: 54 },
     ],
     text: "Wasser löscht Feuer und zerbricht Gestein.",
   },
   {
     id: "glumanda", typ: "feuer", attacke: "Glut",
     stufen: [
-      { name: "Glumanda", emoji: "🔥", ab: 0, basis: 7, hp: 33 },
-      { name: "Glutexo", emoji: "🐲", ab: EP_STUFE_2, basis: 11, hp: 41 },
-      { name: "Glurak", emoji: "🐉", ab: EP_STUFE_3, basis: 16, hp: 52 },
+      { name: "Glumanda", emoji: "🔥", basis: 7, hp: 33 },
+      { name: "Glutexo", emoji: "🐲", basis: 11, hp: 41 },
+      { name: "Glurak", emoji: "🐉", basis: 16, hp: 52 },
     ],
     text: "Aus dem kleinen Schwanzflämmchen wird ein Drache.",
   },
   {
     id: "taubsi", typ: "flug", attacke: "Flügelschlag",
     stufen: [
-      { name: "Taubsi", emoji: "🐣", ab: 0, basis: 7, hp: 32 },
-      { name: "Tauboga", emoji: "🐦", ab: EP_STUFE_2, basis: 11, hp: 40 },
-      { name: "Tauboss", emoji: "🦅", ab: EP_STUFE_3, basis: 15, hp: 48 },
+      { name: "Taubsi", emoji: "🐣", basis: 7, hp: 32 },
+      { name: "Tauboga", emoji: "🐦", basis: 11, hp: 40 },
+      { name: "Tauboss", emoji: "🦅", basis: 15, hp: 48 },
     ],
     text: "Sieht von oben, was am Boden verborgen ist.",
   },
   {
     id: "raupy", typ: "kaefer", attacke: "Silberhauch",
     stufen: [
-      { name: "Raupy", emoji: "🐛", ab: 0, basis: 6, hp: 30 },
-      { name: "Safcon", emoji: "🟩", ab: EP_STUFE_2, basis: 9, hp: 40 },
-      { name: "Smettbo", emoji: "🦋", ab: EP_STUFE_3, basis: 15, hp: 46 },
+      { name: "Raupy", emoji: "🐛", basis: 6, hp: 30 },
+      { name: "Safcon", emoji: "🟩", basis: 9, hp: 40 },
+      { name: "Smettbo", emoji: "🦋", basis: 15, hp: 46 },
     ],
     text: "Erst Raupe, dann Kokon, dann der schönste Schmetterling.",
   },
   {
     id: "vulpix", typ: "feuer", attacke: "Flammenwurf",
     stufen: [
-      { name: "Vulpix", emoji: "🦊", ab: 0, basis: 8, hp: 34 },
-      { name: "Vulnona", emoji: "🦊✨", ab: EP_STUFE_2, basis: 13, hp: 46 },
+      { name: "Vulpix", emoji: "🦊", basis: 8, hp: 34 },
+      { name: "Vulnona", emoji: "🦊✨", basis: 13, hp: 46 },
     ],
     text: "Neun Schwänze, und jeder einzelne ist verzaubert.",
   },
   {
     id: "menki", typ: "kampf", attacke: "Karateschlag",
     stufen: [
-      { name: "Menki", emoji: "🐒", ab: 0, basis: 8, hp: 34 },
-      { name: "Rasaff", emoji: "🦍", ab: EP_STUFE_2, basis: 13, hp: 46 },
+      { name: "Menki", emoji: "🐒", basis: 8, hp: 34 },
+      { name: "Rasaff", emoji: "🦍", basis: 13, hp: 46 },
     ],
     text: "Wird richtig wütend — und dadurch richtig stark.",
   },
   {
     id: "lapras", typ: "eis", attacke: "Eisstrahl",
-    stufen: [{ name: "Lapras", emoji: "🐋", ab: 0, basis: 12, hp: 50 }],
+    stufen: [{ name: "Lapras", emoji: "🐋", basis: 12, hp: 50 }],
     text: "Selten und sanft. Trägt dich über jedes Meer.",
   },
 ];
@@ -135,24 +132,36 @@ const TEAM = [
 const TEAM_NACH_ID = {};
 TEAM.forEach((p) => { TEAM_NACH_ID[p.id] = p; });
 
-/* Welche Stufe ist mit diesen EP erreicht? */
-function stufeVon(pokemon, ep) {
-  let s = pokemon.stufen[0];
-  for (const stufe of pokemon.stufen) if (ep >= stufe.ab) s = stufe;
-  return s;
+/* Der "Stand" eines Pokemon: wie viele seiner Raetsel geloest sind, und
+   wie viele EP dabei zusammengekommen sind.
+
+   Wichtig und bewusst getrennt:
+   - Die ENTWICKLUNG haengt allein an der Anzahl geloester Raetsel. Wer Hilfen
+     braucht, entwickelt sein Team also genauso weit — Hilfe holen darf nicht
+     den Sieg kosten.
+   - Die EP geben nur einen kleinen Stärkebonus. Selbstständig loesen lohnt
+     sich, ist aber nie Voraussetzung. */
+function stufeVon(pokemon, stand) {
+  const i = Math.min(pokemon.stufen.length - 1, stand.anzahl);
+  return pokemon.stufen[i];
 }
 
-/* Die naechste Entwicklung — fuer die Anzeige "noch N EP". */
-function naechsteStufe(pokemon, ep) {
-  return pokemon.stufen.find((s) => ep < s.ab) || null;
+/* Die naechste Entwicklung, oder null wenn voll entwickelt. */
+function naechsteStufe(pokemon, stand) {
+  const i = Math.min(pokemon.stufen.length - 1, stand.anzahl);
+  return i + 1 < pokemon.stufen.length ? pokemon.stufen[i + 1] : null;
 }
 
-/* EP zaehlen immer mit: Basis aus der Stufe plus ein Bonus aus den EP. */
-function staerkeVon(pokemon, ep) {
-  return stufeVon(pokemon, ep).basis + Math.floor(ep / 6);
+function staerkeVon(pokemon, stand) {
+  return stufeVon(pokemon, stand).basis + Math.floor(stand.ep / 6);
 }
-function maxHpVon(pokemon, ep) {
-  return stufeVon(pokemon, ep).hp + Math.floor(ep / 4);
+function maxHpVon(pokemon, stand) {
+  return stufeVon(pokemon, stand).hp + Math.floor(stand.ep / 4);
+}
+
+/* Ein Pokemon kaempft erst mit, wenn es mindestens ein Raetsel trainiert hat. */
+function imTeam(stand) {
+  return stand.anzahl > 0;
 }
 
 /* ------------------------------------------------------------
@@ -192,13 +201,14 @@ const KAPITEL = [
 const AUFGABEN = [
   {
     id: 1, kap: 1, fuer: "pikachu",
-    story: "Professor Eich zeigt dir sein Regal mit 26 Pokébällen. Am Nachmittag bringt sein Assistent noch 17 Bälle dazu.",
-    frage: "Wie viele Pokébälle stehen jetzt im Regal?",
-    antwort: 43, einheit: "Pokébälle",
-    blitzlicht: "Im Text stecken zwei Zahlen: 26 und 17.",
-    adlerauge: "Gesucht ist, wie viele es ZUSAMMEN sind, nachdem welche dazugekommen sind.",
-    denkhilfe: "Es kommen Bälle dazu — also plus: 26 + 17 = ?",
-    loesung: "26 + 17 = 43. Im Regal stehen 43 Pokébälle.",
+    story: "Professor Eich hat 6 Regale. In jedem Regal stehen 7 Pokébälle. Auf dem Tisch daneben liegen außerdem 5 Pokébälle.",
+    frage: "Wie viele Pokébälle stehen in den Regalen?",
+    antwort: 42, einheit: "Pokébälle",
+    blitzlicht: "Wichtig sind 6 Regale und 7 Bälle pro Regal. Die 5 auf dem Tisch stehen auch im Text.",
+    adlerauge: "Gefragt sind nur die Bälle in den REGALEN — nicht alle Bälle im Zimmer.",
+    denkhilfe: "6 Regale mit je 7 Bällen: 6 × 7 = ?",
+    loesung: "6 × 7 = 42. In den Regalen stehen 42 Pokébälle. Die 5 auf dem Tisch zählen nicht mit.",
+    falle: { wert: 47, hinweis: "Du hast die 5 Bälle vom Tisch mitgezählt. Die Frage will nur die Regale — lies sie nochmal ganz." },
   },
   {
     id: 2, kap: 1, fuer: "glumanda",
@@ -206,139 +216,152 @@ const AUFGABEN = [
     frage: "Wie viele Beeren hat Glumanda noch?",
     antwort: 33, einheit: "Beeren",
     blitzlicht: "Im Text stecken zwei Zahlen: 52 und 19.",
-    adlerauge: "Gesucht ist, was NOCH DA ist, nachdem etwas weggefressen wurde.",
+    adlerauge: "Gefragt ist, was NOCH DA ist, nachdem etwas weggefressen wurde.",
     denkhilfe: "Aufgefressen heißt weniger — also minus: 52 − 19 = ?",
     loesung: "52 − 19 = 33. Glumanda hat noch 33 Beeren.",
   },
   {
     id: 3, kap: 1, fuer: "taubsi",
-    story: "Auf Route 1 sitzen 35 Taubsi im Gras. 12 fliegen erschrocken weg, dann landen 9 neue dazu.",
-    frage: "Wie viele Taubsi sitzen jetzt im Gras?",
-    antwort: 32, einheit: "Taubsi",
-    blitzlicht: "Drei Zahlen sind wichtig: 35, 12 und 9.",
-    adlerauge: "Gesucht ist die Zahl AM ENDE. Achtung: zuerst fliegen welche weg, dann kommen welche dazu.",
-    denkhilfe: "Zwei Schritte: erst 35 − 12 = ?, dann das Ergebnis + 9 = ?",
-    loesung: "35 − 12 = 23, und 23 + 9 = 32. Es sitzen 32 Taubsi im Gras.",
+    story: "Auf Route 1 sitzen 8 Gruppen Taubsi im Gras. In jeder Gruppe sind 9 Vögel. Als Pikachu funkt, fliegen 24 Taubsi erschrocken weg.",
+    frage: "Wie viele Taubsi sitzen danach noch im Gras?",
+    antwort: 48, einheit: "Taubsi",
+    blitzlicht: "Wichtig sind 8 Gruppen, 9 Vögel pro Gruppe und 24, die wegfliegen.",
+    adlerauge: "Gefragt ist die Zahl DANACH — also nachdem die 24 weggeflogen sind.",
+    denkhilfe: "Zwei Schritte: erst 8 × 9 = ?, dann davon 24 weg.",
+    loesung: "8 × 9 = 72, und 72 − 24 = 48. Es sitzen noch 48 Taubsi im Gras.",
+    falle: { wert: 72, hinweis: "72 ist die Zahl VORHER. Der Satz geht noch weiter: 24 fliegen weg." },
   },
   {
     id: 4, kap: 2, fuer: "raupy",
-    story: "Im Wald von Vertania zählst du 28 Raupy auf den Blättern. Hinter dem nächsten Baum entdeckst du 16 weitere.",
-    frage: "Wie viele Raupy hast du insgesamt gezählt?",
-    antwort: 44, einheit: "Raupy",
-    blitzlicht: "Im Text stecken zwei Zahlen: 28 und 16.",
-    adlerauge: "Gesucht ist die Anzahl INSGESAMT, also alles zusammen.",
-    denkhilfe: "Insgesamt heißt zusammenzählen: 28 + 16 = ?",
-    loesung: "28 + 16 = 44. Du hast 44 Raupy gezählt.",
+    story: "Im Wald von Vertania hängen 48 Raupy an den Blättern. Sie verteilen sich gleichmäßig auf 6 Bäume.",
+    frage: "Wie viele Raupy hängen an einem Baum?",
+    antwort: 8, einheit: "Raupy",
+    blitzlicht: "Im Text stecken zwei Zahlen: 48 und 6.",
+    adlerauge: "Gefragt ist die Anzahl an EINEM Baum, nicht an allen zusammen.",
+    denkhilfe: "Gleichmäßig verteilen heißt teilen: 48 : 6 = ?",
+    loesung: "48 : 6 = 8. An jedem Baum hängen 8 Raupy.",
+    falle: { wert: 42, hinweis: "Du hast 48 − 6 gerechnet. Gleichmäßig aufteilen heißt aber teilen, nicht abziehen." },
   },
   {
     id: 5, kap: 2, fuer: "bisasam",
-    story: "Bisasam trägt 61 Samen in seiner Knospe. Auf der Lichtung pflanzt es 24 davon ein.",
-    frage: "Wie viele Samen sind noch in der Knospe?",
-    antwort: 37, einheit: "Samen",
-    blitzlicht: "Im Text stecken zwei Zahlen: 61 und 24.",
-    adlerauge: "Gesucht ist, wie viele ÜBRIG sind, nachdem etwas eingepflanzt wurde.",
-    denkhilfe: "Eingepflanzt heißt weg aus der Knospe — also minus: 61 − 24 = ?",
-    loesung: "61 − 24 = 37. In der Knospe sind noch 37 Samen.",
+    story: "Bisasam pflanzt 7 Reihen mit je 8 Samen. In der Nacht fressen Rattfratz 15 Samen auf.",
+    frage: "Wie viele Samen wachsen am Morgen noch?",
+    antwort: 41, einheit: "Samen",
+    blitzlicht: "Wichtig sind 7 Reihen, 8 Samen pro Reihe und 15 gefressene.",
+    adlerauge: "Gefragt ist, wie viele AM MORGEN noch wachsen — die gefressenen sind weg.",
+    denkhilfe: "Zwei Schritte: erst 7 × 8 = ?, dann davon 15 weg.",
+    loesung: "7 × 8 = 56, und 56 − 15 = 41. Am Morgen wachsen noch 41 Samen.",
+    falle: { wert: 56, hinweis: "56 sind alle gepflanzten Samen. Die Nacht kommt aber noch — 15 werden gefressen." },
   },
   {
     id: 6, kap: 2, fuer: "taubsi",
-    story: "Taubsi fliegt über den Wald und sieht 47 Bäume. 15 davon hat der Sturm umgeworfen, 8 stehen noch ganz frisch gepflanzt daneben.",
-    frage: "Wie viele Bäume stehen aufrecht?",
-    antwort: 40, einheit: "Bäume",
-    blitzlicht: "Wichtig sind 47, 15 und 8.",
-    adlerauge: "Gesucht sind die AUFRECHTEN Bäume. Die umgeworfenen zählen nicht mit, die frischen schon.",
-    denkhilfe: "Zwei Schritte: 47 − 15 = ?, dann das Ergebnis + 8 = ?",
-    loesung: "47 − 15 = 32, und 32 + 8 = 40. Es stehen 40 Bäume aufrecht.",
+    story: "Tauboga findet 36 Beeren und teilt sie gerecht auf 4 Nester auf. In ein einzelnes Nest legt es später noch 7 Beeren dazu.",
+    frage: "Wie viele Beeren liegen in diesem einen Nest?",
+    antwort: 16, einheit: "Beeren",
+    blitzlicht: "Wichtig sind 36 Beeren, 4 Nester und 7 Beeren extra.",
+    adlerauge: "Gefragt ist EIN Nest — und zwar das, in das noch 7 dazugelegt wurden.",
+    denkhilfe: "Zwei Schritte: erst 36 : 4 = ?, dann das Ergebnis + 7.",
+    loesung: "36 : 4 = 9, und 9 + 7 = 16. In diesem Nest liegen 16 Beeren.",
+    falle: { wert: 9, hinweis: "9 liegt in jedem Nest. In DIESES Nest kommen aber noch 7 dazu — lies den letzten Satz nochmal." },
   },
   {
     id: 7, kap: 3, fuer: "menki",
-    story: "Menki hat 74 Nüsse auf einen Haufen gelegt. Beim Wütendwerden tritt es 28 davon in den Fluss.",
-    frage: "Wie viele Nüsse liegen noch auf dem Haufen?",
-    antwort: 46, einheit: "Nüsse",
-    blitzlicht: "Im Text stecken zwei Zahlen: 74 und 28.",
-    adlerauge: "Gesucht ist, was noch auf dem Haufen LIEGT.",
-    denkhilfe: "In den Fluss getreten heißt weg — also minus: 74 − 28 = ?",
-    loesung: "74 − 28 = 46. Auf dem Haufen liegen noch 46 Nüsse.",
+    story: "Menki stapelt 9 Türme aus je 8 Nüssen. Beim Wütendwerden tritt es 27 Nüsse in den Fluss. Am Ufer liegen noch 6 einzelne Nüsse, die nie zu einem Turm gehört haben.",
+    frage: "Wie viele Nüsse stecken noch in den Türmen?",
+    antwort: 45, einheit: "Nüsse",
+    blitzlicht: "Wichtig sind 9 Türme, 8 Nüsse pro Turm und 27 getretene. Die 6 am Ufer stehen auch im Text.",
+    adlerauge: "Gefragt sind nur die Nüsse in den TÜRMEN. Die 6 einzelnen am Ufer gehören nicht dazu.",
+    denkhilfe: "Zwei Schritte: erst 9 × 8 = ?, dann davon 27 weg. Die 6 brauchst du nicht.",
+    loesung: "9 × 8 = 72, und 72 − 27 = 45. In den Türmen stecken noch 45 Nüsse.",
+    falle: { wert: 51, hinweis: "Du hast die 6 einzelnen Nüsse dazugezählt. Die haben nie zu einem Turm gehört." },
   },
   {
     id: 8, kap: 3, fuer: "schiggy",
-    story: "Schiggy füllt seinen Panzer mit 38 Litern Wasser. An der Quelle nimmt es noch 27 Liter dazu.",
-    frage: "Wie viele Liter hat Schiggy jetzt im Panzer?",
-    antwort: 65, einheit: "Liter",
-    blitzlicht: "Im Text stecken zwei Zahlen: 38 und 27.",
-    adlerauge: "Gesucht ist die Menge, die es JETZT hat, nachdem es mehr dazugenommen hat.",
-    denkhilfe: "Dazugenommen heißt plus: 38 + 27 = ?",
-    loesung: "38 + 27 = 65. Schiggy hat 65 Liter im Panzer.",
+    story: "Schiggy füllt 63 Liter Wasser gleichmäßig in 7 Fässer. Aus einem Fass laufen später 4 Liter aus.",
+    frage: "Wie viele Liter sind noch in diesem einen Fass?",
+    antwort: 5, einheit: "Liter",
+    blitzlicht: "Wichtig sind 63 Liter, 7 Fässer und 4 Liter, die auslaufen.",
+    adlerauge: "Gefragt ist EIN Fass — das, aus dem 4 Liter ausgelaufen sind.",
+    denkhilfe: "Zwei Schritte: erst 63 : 7 = ?, dann davon 4 weg.",
+    loesung: "63 : 7 = 9, und 9 − 4 = 5. In diesem Fass sind noch 5 Liter.",
+    falle: { wert: 59, hinweis: "Du hast 4 vom ganzen Wasser abgezogen. Erst aufteilen, dann von dem EINEN Fass abziehen." },
   },
   {
     id: 9, kap: 3, fuer: "raupy",
-    story: "In Marmoria liegen 90 Steine am Weg. Rocko räumt 35 weg, danach rollen 11 vom Berg herunter.",
-    frage: "Wie viele Steine liegen am Ende am Weg?",
-    antwort: 66, einheit: "Steine",
-    blitzlicht: "Wichtig sind 90, 35 und 11.",
-    adlerauge: "Gesucht ist die Anzahl AM ENDE. Erst werden welche weggeräumt, dann kommen welche dazu.",
-    denkhilfe: "Zwei Schritte: 90 − 35 = ?, dann das Ergebnis + 11 = ?",
-    loesung: "90 − 35 = 55, und 55 + 11 = 66. Am Weg liegen 66 Steine.",
+    story: "In Marmoria liegen 7 Haufen mit je 9 Steinen. Rocko räumt 3 ganze Haufen weg.",
+    frage: "Wie viele Steine liegen danach noch da?",
+    antwort: 36, einheit: "Steine",
+    blitzlicht: "Wichtig sind 7 Haufen, 9 Steine pro Haufen und 3 weggeräumte Haufen.",
+    adlerauge: "Achtung: weggeräumt werden 3 HAUFEN, nicht 3 Steine.",
+    denkhilfe: "Drei Schritte: 7 × 9 = ? Dann 3 × 9 = ? Dann das eine minus das andere. Kürzer: es bleiben 4 Haufen übrig.",
+    loesung: "7 × 9 = 63 Steine. Weggeräumt: 3 × 9 = 27. Also 63 − 27 = 36 Steine. (Oder gleich: 4 Haufen × 9 = 36.)",
+    falle: { wert: 60, hinweis: "Du hast nur 3 Steine abgezogen. Weggeräumt wurden 3 ganze HAUFEN — jeder mit 9 Steinen." },
   },
   {
     id: 10, kap: 4, fuer: "lapras",
-    story: "Lapras trägt dich über das Meer. Ihr zählt 43 Muscheln am Strand, findet 29 weitere im Sand und legt 16 zurück ins Wasser.",
-    frage: "Wie viele Muscheln habt ihr am Ende behalten?",
-    antwort: 56, einheit: "Muscheln",
-    blitzlicht: "Wichtig sind 43, 29 und 16.",
-    adlerauge: "Gesucht ist, wie viele ihr BEHALTEN habt. Zurückgelegte zählen nicht mehr mit.",
-    denkhilfe: "Drei Schritte: 43 + 29 = ?, dann davon 16 weg.",
-    loesung: "43 + 29 = 72, und 72 − 16 = 56. Ihr habt 56 Muscheln behalten.",
+    story: "Lapras nimmt 8 Körbe mit je 9 Muscheln an Bord. Auf der Fahrt fallen 5 Muscheln ins Wasser zurück. Am Strand bleiben 20 Muscheln liegen.",
+    frage: "Wie viele Muscheln hat Lapras am Ende an Bord?",
+    antwort: 67, einheit: "Muscheln",
+    blitzlicht: "Wichtig sind 8 Körbe, 9 Muscheln pro Korb und 5, die ins Wasser fallen. Die 20 am Strand stehen auch im Text.",
+    adlerauge: "Gefragt ist, was AN BORD ist. Was am Strand liegen bleibt, ist nicht an Bord.",
+    denkhilfe: "Zwei Schritte: erst 8 × 9 = ?, dann davon 5 weg. Die 20 brauchst du nicht.",
+    loesung: "8 × 9 = 72, und 72 − 5 = 67. Lapras hat 67 Muscheln an Bord.",
+    falle: { wert: 87, hinweis: "Du hast die 20 vom Strand dazugezählt. Die sind gerade nicht an Bord." },
   },
   {
     id: 11, kap: 4, fuer: "schiggy",
-    story: "Am Hafen von Azuria liegen 55 Boote. Am Morgen fahren 23 hinaus, am Abend kommen 19 zurück.",
-    frage: "Wie viele Boote liegen abends im Hafen?",
-    antwort: 51, einheit: "Boote",
-    blitzlicht: "Wichtig sind 55, 23 und 19.",
-    adlerauge: "Gesucht ist die Anzahl ABENDS im Hafen. Ausgefahrene sind weg, zurückgekehrte wieder da.",
-    denkhilfe: "Zwei Schritte: 55 − 23 = ?, dann das Ergebnis + 19 = ?",
-    loesung: "55 − 23 = 32, und 32 + 19 = 51. Abends liegen 51 Boote im Hafen.",
+    story: "Am Hafen von Azuria liegen 40 Boote in 5 gleich großen Reihen. Am Morgen fahren 3 ganze Reihen hinaus.",
+    frage: "Wie viele Boote fahren hinaus?",
+    antwort: 24, einheit: "Boote",
+    blitzlicht: "Wichtig sind 40 Boote, 5 Reihen und 3 Reihen, die hinausfahren.",
+    adlerauge: "Gefragt ist, wie viele Boote HINAUSFAHREN — nicht wie viele im Hafen bleiben.",
+    denkhilfe: "Zwei Schritte: erst 40 : 5 = ? (eine Reihe), dann × 3 (drei Reihen).",
+    loesung: "40 : 5 = 8 Boote pro Reihe, und 8 × 3 = 24. Es fahren 24 Boote hinaus.",
+    falle: { wert: 8, hinweis: "8 ist EINE Reihe. Hinaus fahren aber 3 Reihen." },
   },
   {
     id: 12, kap: 4, fuer: "vulpix",
-    story: "Vulpix wärmt 63 Steine für die Nacht auf. Bis zum Morgen sind 27 davon wieder kalt geworden.",
+    story: "Vulpix wärmt 9 Steinkreise mit je 7 Steinen für die Nacht auf. Bis zum Morgen sind 18 Steine wieder kalt geworden.",
     frage: "Wie viele Steine sind morgens noch warm?",
-    antwort: 36, einheit: "Steine",
-    blitzlicht: "Im Text stecken zwei Zahlen: 63 und 27.",
-    adlerauge: "Gesucht sind die Steine, die noch WARM sind.",
-    denkhilfe: "Kalt geworden heißt nicht mehr warm — also minus: 63 − 27 = ?",
-    loesung: "63 − 27 = 36. Morgens sind noch 36 Steine warm.",
+    antwort: 45, einheit: "Steine",
+    blitzlicht: "Wichtig sind 9 Kreise, 7 Steine pro Kreis und 18 kalte.",
+    adlerauge: "Gefragt sind die Steine, die MORGENS noch warm sind.",
+    denkhilfe: "Zwei Schritte: erst 9 × 7 = ?, dann davon 18 weg.",
+    loesung: "9 × 7 = 63, und 63 − 18 = 45. Morgens sind noch 45 Steine warm.",
+    falle: { wert: 63, hinweis: "63 sind alle Steine am Abend. Über Nacht werden 18 davon kalt." },
   },
   {
     id: 13, kap: 5, fuer: "bisasam",
-    story: "Vor der Arena stehen 84 Trainerinnen und Trainer in der Schlange. 39 geben auf und gehen heim, dann stellen sich 15 neue an.",
-    frage: "Wie viele stehen jetzt in der Schlange?",
-    antwort: 60, einheit: "Personen",
-    blitzlicht: "Wichtig sind 84, 39 und 15.",
-    adlerauge: "Gesucht ist die Anzahl JETZT. Erst gehen welche, dann kommen welche.",
-    denkhilfe: "Zwei Schritte: 84 − 39 = ?, dann das Ergebnis + 15 = ?",
-    loesung: "84 − 39 = 45, und 45 + 15 = 60. In der Schlange stehen 60 Personen.",
+    story: "Vor der Arena stehen 9 Gruppen mit je 8 Trainerinnen und Trainern. 25 geben auf und gehen heim. Danach stellen sich 12 neue an.",
+    frage: "Wie viele stehen am Ende in der Schlange?",
+    antwort: 59, einheit: "Personen",
+    blitzlicht: "Wichtig sind 9 Gruppen, 8 Personen pro Gruppe, 25 die gehen und 12 die kommen.",
+    adlerauge: "Gefragt ist die Zahl AM ENDE — erst gehen welche, dann kommen welche.",
+    denkhilfe: "Drei Schritte: 9 × 8 = ?, dann davon 25 weg, dann + 12.",
+    loesung: "9 × 8 = 72, dann 72 − 25 = 47, und 47 + 12 = 59. Am Ende stehen 59 Personen in der Schlange.",
+    falle: { wert: 47, hinweis: "Bei 47 hast du in der Mitte aufgehört. Der letzte Satz sagt: 12 stellen sich noch an." },
   },
   {
     id: 14, kap: 5, fuer: "glumanda",
-    story: "Glumandas Flamme ist 48 Grad heiß. Beim Training werden es 26 Grad mehr, danach kühlt sie um 17 Grad ab.",
-    frage: "Wie heiß ist die Flamme am Ende?",
-    antwort: 57, einheit: "Grad",
-    blitzlicht: "Wichtig sind 48, 26 und 17.",
-    adlerauge: "Gesucht ist die Temperatur AM ENDE. Erst wird es heißer, dann kühler.",
-    denkhilfe: "Drei Schritte: 48 + 26 = ?, dann davon 17 weg.",
-    loesung: "48 + 26 = 74, und 74 − 17 = 57. Die Flamme ist 57 Grad heiß.",
+    story: "Glumandas Training hat 9 Runden mit je 6 Sprüngen. Der Trainer verteilt alle Sprünge danach gleichmäßig auf 6 Tage.",
+    frage: "Wie viele Sprünge macht Glumanda an einem Tag?",
+    antwort: 9, einheit: "Sprünge",
+    blitzlicht: "Wichtig sind 9 Runden, 6 Sprünge pro Runde und 6 Tage.",
+    adlerauge: "Gefragt sind die Sprünge an EINEM Tag, nicht alle zusammen.",
+    denkhilfe: "Zwei Schritte: erst 9 × 6 = ? (alle Sprünge), dann : 6 (auf sechs Tage).",
+    loesung: "9 × 6 = 54 Sprünge, und 54 : 6 = 9. An einem Tag macht Glumanda 9 Sprünge.",
+    falle: { wert: 54, hinweis: "54 sind alle Sprünge zusammen. Sie werden noch auf 6 Tage verteilt." },
   },
   {
     id: 15, kap: 5, fuer: "pikachu",
-    story: "Pikachu sammelt Blitze für die Arena. Es hat 29 Volt, lädt 34 dazu und verliert bei einem Sprung 12.",
+    story: "Pikachu lädt sich in 7 Runden mit je 9 Volt auf. Bei einem Sprung verliert es 16 Volt. Danach findet es eine Beere, die noch 15 Volt bringt.",
     frage: "Mit wie viel Volt geht Pikachu in die Arena?",
-    antwort: 51, einheit: "Volt",
-    blitzlicht: "Wichtig sind 29, 34 und 12.",
-    adlerauge: "Gesucht ist die Ladung AM ENDE. Erst kommt dazu, dann geht etwas verloren.",
-    denkhilfe: "Drei Schritte: 29 + 34 = ?, dann davon 12 weg.",
-    loesung: "29 + 34 = 63, und 63 − 12 = 51. Pikachu geht mit 51 Volt in die Arena.",
+    antwort: 62, einheit: "Volt",
+    blitzlicht: "Wichtig sind 7 Runden, 9 Volt pro Runde, 16 verlorene und 15 aus der Beere.",
+    adlerauge: "Gefragt ist die Ladung AM ENDE — nach dem Verlust UND nach der Beere.",
+    denkhilfe: "Drei Schritte: 7 × 9 = ?, dann davon 16 weg, dann + 15.",
+    loesung: "7 × 9 = 63, dann 63 − 16 = 47, und 47 + 15 = 62. Pikachu geht mit 62 Volt in die Arena.",
+    falle: { wert: 47, hinweis: "Bei 47 fehlt die Beere. Der letzte Satz bringt noch 15 Volt dazu." },
   },
 ];
 
@@ -347,32 +370,58 @@ const AUFGABEN = [
    Fuenf Gegner, der letzte ist der Boss. `schaden` ist der
    Grundschaden pro Zug, `hp` die Lebenspunkte.
    ------------------------------------------------------------ */
+/* Die Arena oeffnet erst in Marmoria (Kapitel 3), also nach den ersten
+   sechs Raetseln. Onix zeigt sich erst, wenn ALLE Raetsel geloest sind —
+   damit bis zum Schluss etwas Besonderes wartet.
+   Wichtig: die Sperren sind sichtbar und benannt, nie stillschweigend. */
+const ARENA_AB_RAETSEL = 6;
+
 const GEGNER = [
   { name: "Rattfratz", emoji: "🐭", typ: "normal", hp: 80, schaden: 5,
     spruch: "Ein frecher Anfang. Rattfratz beißt nach deinen Schnürsenkeln." },
-  { name: "Zubat", emoji: "🦇", typ: "flug", hp: 115, schaden: 7,
+  { name: "Zubat", emoji: "🦇", typ: "flug", hp: 115, schaden: 8,
     spruch: "Aus dem Dunkeln flattert Zubat heran. Es ist schnell." },
-  { name: "Machollo", emoji: "💪", typ: "kampf", hp: 155, schaden: 9,
+  { name: "Machollo", emoji: "💪", typ: "kampf", hp: 200, schaden: 12,
     spruch: "Machollo spannt alle Muskeln. Das wird ruppig." },
-  { name: "Arbok", emoji: "🐍", typ: "gift", hp: 205, schaden: 11,
+  { name: "Arbok", emoji: "🐍", typ: "gift", hp: 290, schaden: 15,
     spruch: "Arbok richtet sich auf und zischt. Team Rocket lässt grüßen." },
-  { name: "Onix", emoji: "🪨", typ: "gestein", hp: 280, schaden: 14, boss: true,
+  { name: "Onix", emoji: "🪨", typ: "gestein", hp: 340, schaden: 17, boss: true,
     spruch: "Der Boden bebt. ONIX türmt sich vor dir auf — der letzte Gegner." },
 ];
 
-/* Rechenaufgabe fuer einen Kampfzug: Zahlenraum bis 100, plus und minus. */
+/* Rechenaufgabe fuer einen Kampfzug.
+   Mischung mit Schwerpunkt auf Mal und Minus. Malnehmen und Teilen bleiben
+   im kleinen 1x1 (Faktoren 2 bis 9), alles andere im Zahlenraum bis 100. */
+const wuerfel = (von, bis) => von + Math.floor(Math.random() * (bis - von + 1));
+
 function kampfRechnung() {
-  if (Math.random() < 0.5) {
-    const a = 12 + Math.floor(Math.random() * 59);
-    const b = 8 + Math.floor(Math.random() * (100 - a - 7));
-    return { text: a + " + " + b, loesung: a + b };
+  const w = Math.random();
+
+  if (w < 0.4) {
+    /* Malnehmen im kleinen 1x1 */
+    const a = wuerfel(2, 9);
+    const b = wuerfel(2, 9);
+    return { text: a + " × " + b, loesung: a * b };
   }
-  const gross = 45 + Math.floor(Math.random() * 51);
-  /* Der kleinere Wert wird so begrenzt, dass das Ergebnis nie unter 10 faellt —
-     ohne diese Grenze konnte 45 − 47 herauskommen. */
-  const maxKlein = Math.min(47, gross - 10);
-  const klein = 8 + Math.floor(Math.random() * (maxKlein - 7));
-  return { text: gross + " − " + klein, loesung: gross - klein };
+
+  if (w < 0.65) {
+    /* Minus, Ergebnis bleibt zwischen 10 und 100 */
+    const gross = wuerfel(45, 95);
+    const klein = wuerfel(8, Math.min(47, gross - 10));
+    return { text: gross + " − " + klein, loesung: gross - klein };
+  }
+
+  if (w < 0.85) {
+    /* Teilen — rueckwaerts gebaut, damit es immer glatt aufgeht */
+    const teiler = wuerfel(2, 9);
+    const ergebnis = wuerfel(2, 9);
+    return { text: teiler * ergebnis + " : " + teiler, loesung: ergebnis };
+  }
+
+  /* Plus, Summe bleibt unter 100 */
+  const a = wuerfel(12, 70);
+  const b = wuerfel(8, 100 - a);
+  return { text: a + " + " + b, loesung: a + b };
 }
 
 /* ============================================================
@@ -522,28 +571,43 @@ function TonSchalter({ tonAn, setTonAn }) {
 }
 
 /* Ein Pokemon als Karte, wie im Team-Ueberblick */
-function PokemonKarte({ pokemon, ep, klein }) {
-  const stufe = stufeVon(pokemon, ep);
-  const naechste = naechsteStufe(pokemon, ep);
+function PokemonKarte({ pokemon, stand, klein }) {
+  const stufe = stufeVon(pokemon, stand);
+  const naechste = naechsteStufe(pokemon, stand);
   const entwickelt = pokemon.stufen.indexOf(stufe) > 0;
+  const dabei = imTeam(stand);
   return (
     <div className={`rounded-2xl border-2 p-3 text-center ${
-      entwickelt ? "border-yellow-400 bg-slate-800" : "border-slate-600 bg-slate-800/60"
+      !dabei ? "border-dashed border-slate-700 bg-slate-900/50"
+      : entwickelt ? "border-yellow-400 bg-slate-800"
+      : "border-slate-600 bg-slate-800/60"
     }`}>
-      <div className={klein ? "text-3xl" : "text-5xl"}>{stufe.emoji}</div>
-      <p className="mt-1 font-black text-slate-100">{stufe.name}</p>
-      <div className="mt-1"><TypBadge typ={pokemon.typ} klein /></div>
-      <p className="mt-2 text-xs font-bold text-sky-200">
-        ⭐ {ep} EP · 💥 {staerkeVon(pokemon, ep)} · ❤️ {maxHpVon(pokemon, ep)}
+      <div className={`${klein ? "text-3xl" : "text-5xl"} ${dabei ? "" : "opacity-30"}`}>
+        {dabei ? stufe.emoji : "❔"}
+      </div>
+      <p className={`mt-1 font-black ${dabei ? "text-slate-100" : "text-slate-500"}`}>
+        {dabei ? stufe.name : pokemon.stufen[0].name}
       </p>
-      {naechste ? (
-        <p className="mt-1 text-[11px] text-slate-400">
-          entwickelt sich bei {naechste.ab} EP zu {naechste.name}
-        </p>
-      ) : pokemon.stufen.length > 1 ? (
-        <p className="mt-1 text-[11px] font-bold text-yellow-300">voll entwickelt ✦</p>
+      {dabei ? (
+        <>
+          <div className="mt-1"><TypBadge typ={pokemon.typ} klein /></div>
+          <p className="mt-2 text-xs font-bold text-sky-200">
+            ⭐ {stand.ep} EP · 💥 {staerkeVon(pokemon, stand)} · ❤️ {maxHpVon(pokemon, stand)}
+          </p>
+          {naechste ? (
+            <p className="mt-1 text-[11px] text-slate-400">
+              entwickelt sich zu {naechste.name}, wenn du sein nächstes Rätsel löst
+            </p>
+          ) : pokemon.stufen.length > 1 ? (
+            <p className="mt-1 text-[11px] font-bold text-yellow-300">voll entwickelt ✦</p>
+          ) : (
+            <p className="mt-1 text-[11px] text-slate-400">entwickelt sich nicht</p>
+          )}
+        </>
       ) : (
-        <p className="mt-1 text-[11px] text-slate-400">entwickelt sich nicht</p>
+        <p className="mt-2 text-[11px] text-yellow-300/80">
+          noch nicht dabei — löse sein Rätsel, dann kämpft es mit
+        </p>
       )}
     </div>
   );
@@ -556,12 +620,15 @@ function PokemonKarte({ pokemon, ep, klein }) {
    es entscheidet nicht, ob sie hinein darf.
    ============================================================ */
 const LADUNG = [1, 0.75, 0.5];          // je nach Versuchen
-const HEILUNG_NACH_SIEG = 25;
+const HEILUNG_NACH_SIEG = 20;
 
-function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
+function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, onixOffen, geloestAnzahl }) {
+  /* Nur trainierte Pokemon kaempfen mit. Wer noch kein Raetsel geloest hat,
+     ist noch nicht im Team — dadurch waechst die Truppe mit dem Fortschritt. */
+  const DABEI = TEAM.filter((pp) => imTeam(standVon(pp.id)));
   const startHp = () => {
     const h = {};
-    TEAM.forEach((p) => { h[p.id] = maxHpVon(p, epVon(p.id)); });
+    DABEI.forEach((p) => { h[p.id] = maxHpVon(p, standVon(p.id)); });
     return h;
   };
 
@@ -569,7 +636,7 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
   const [gegnerIdx, setGegnerIdx] = useState(0);
   const [gegnerHp, setGegnerHp] = useState(GEGNER[0].hp);
   const [teamHp, setTeamHp] = useState(startHp);
-  const [aktivId, setAktivId] = useState("pikachu");
+  const [aktivId, setAktivId] = useState(DABEI.length ? DABEI[0].id : "pikachu");
   const [rechnung, setRechnung] = useState(kampfRechnung);
   const [eingabe, setEingabe] = useState("");
   const [versuche, setVersuche] = useState(0);
@@ -579,10 +646,10 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
 
   const gegner = GEGNER[gegnerIdx];
   const aktiv = TEAM_NACH_ID[aktivId];
-  const aktivEp = epVon(aktivId);
-  const aktivStufe = stufeVon(aktiv, aktivEp);
-  const aktivMax = maxHpVon(aktiv, aktivEp);
-  const lebende = TEAM.filter((p) => teamHp[p.id] > 0);
+  const aktivStand = standVon(aktivId);
+  const aktivStufe = stufeVon(aktiv, aktivStand);
+  const aktivMax = maxHpVon(aktiv, aktivStand);
+  const lebende = DABEI.filter((p) => teamHp[p.id] > 0);
 
   function neueRunde() {
     setRechnung(kampfRechnung());
@@ -597,7 +664,7 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
     setGegnerIdx(0);
     setGegnerHp(GEGNER[0].hp);
     setTeamHp(startHp());
-    setAktivId("pikachu");
+    setAktivId(DABEI.length ? DABEI[0].id : "pikachu");
     neueRunde();
   }
 
@@ -623,7 +690,7 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
     /* Treffer: Schaden berechnen */
     const ladung = LADUNG[Math.min(versuche, LADUNG.length - 1)];
     const faktor = typFaktor(aktiv.typ, gegner.typ);
-    const schaden = Math.max(1, Math.round(staerkeVon(aktiv, aktivEp) * faktor * ladung));
+    const schaden = Math.max(1, Math.round(staerkeVon(aktiv, aktivStand) * faktor * ladung));
     const restHp = gegnerHp - schaden;
     setGegnerHp(restHp);
     setEingabe("");
@@ -642,10 +709,18 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
 
     if (restHp <= 0) {
       if (tonAn) Ton.richtig();
-      setPhase(gegnerIdx + 1 >= GEGNER.length ? "gewonnen" : "gegnerBesiegt");
-      if (gegnerIdx + 1 >= GEGNER.length) {
+      const warDerLetzte = gegnerIdx + 1 >= GEGNER.length;
+      const naechsterWaereOnix = gegnerIdx + 1 === GEGNER.length - 1;
+      if (warDerLetzte) {
         if (tonAn) Ton.sieg();
         onGewonnen();
+        setPhase("gewonnen");
+      } else if (naechsterWaereOnix && !onixOffen) {
+        /* Onix zeigt sich erst, wenn alle Raetsel geloest sind. Sichtbar erklaert,
+           damit klar ist, WAS noch fehlt und warum. */
+        setPhase("onixGesperrt");
+      } else {
+        setPhase("gegnerBesiegt");
       }
       return;
     }
@@ -662,7 +737,7 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
     setLetzterZug({ art: "gegner", schaden, faktor, wer: gegner.name, ziel: aktivStufe.name });
 
     if (rest <= 0) {
-      const uebrig = TEAM.filter((p) => p.id !== aktivId && teamHp[p.id] > 0);
+      const uebrig = DABEI.filter((p) => p.id !== aktivId && teamHp[p.id] > 0);
       setOhnmaechtig(aktivStufe.name);
       setPhase(uebrig.length ? "ohnmacht" : "verloren");
       return;
@@ -676,8 +751,8 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
     setGegnerHp(GEGNER[i].hp);
     /* Nach jedem Sieg erholt sich das ganze Team ein Stück */
     const geheilt = {};
-    TEAM.forEach((p) => {
-      const max = maxHpVon(p, epVon(p.id));
+    DABEI.forEach((p) => {
+      const max = maxHpVon(p, standVon(p.id));
       geheilt[p.id] = teamHp[p.id] <= 0 ? 0 : Math.min(max, teamHp[p.id] + HEILUNG_NACH_SIEG);
     });
     setTeamHp(geheilt);
@@ -690,10 +765,10 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
   function TeamLeiste({ waehlbar, nachWahl }) {
     return (
       <div className="mt-3 flex flex-wrap gap-2">
-        {TEAM.map((p) => {
+        {DABEI.map((p) => {
           const hp = teamHp[p.id];
-          const max = maxHpVon(p, epVon(p.id));
-          const stufe = stufeVon(p, epVon(p.id));
+          const max = maxHpVon(p, standVon(p.id));
+          const stufe = stufeVon(p, standVon(p.id));
           const ohnmacht = hp <= 0;
           const ist = p.id === aktivId;
           const vorteil = typFaktor(p.typ, gegner.typ);
@@ -753,14 +828,36 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
               <p><b className="text-yellow-300">Dein Team wird durch Rätsel stärker.</b> Entwickelte Pokémon schlagen härter und halten mehr aus.</p>
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
-              {GEGNER.map((g, i) => (
-                <div key={g.name} className="rounded-xl border border-slate-600 bg-slate-900/60 p-2 text-center">
-                  <div className="text-2xl">{g.emoji}</div>
-                  <p className="text-[11px] font-bold text-slate-200">{i + 1}. {g.name}</p>
-                  <TypBadge typ={g.typ} klein />
-                </div>
-              ))}
+              {GEGNER.map((g, i) => {
+                const zu = g.boss && !onixOffen;
+                return (
+                  <div
+                    key={g.name}
+                    className={`rounded-xl border p-2 text-center ${
+                      zu ? "border-dashed border-slate-600 bg-slate-900/40" : "border-slate-600 bg-slate-900/60"
+                    }`}
+                  >
+                    <div className="text-2xl">{zu ? "🔒" : g.emoji}</div>
+                    <p className="text-[11px] font-bold text-slate-200">{i + 1}. {g.name}</p>
+                    {zu ? (
+                      <p className="text-[10px] text-yellow-300">erst mit allen Rätseln</p>
+                    ) : (
+                      <>
+                        <TypBadge typ={g.typ} klein />
+                        <p className="mt-1 text-[10px] text-slate-400">{g.hp} KP</p>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
+            {!onixOffen && (
+              <p className="mt-3 rounded-xl border border-yellow-500/40 bg-yellow-400/10 p-3 text-sm font-bold text-yellow-200">
+                🔒 Onix wartet noch. Er tritt erst an, wenn alle {AUFGABEN.length} Rätsel
+                gelöst sind — du hast {geloestAnzahl}. Bis dahin ist die Arena ein
+                Trainingsplatz: du kannst kämpfen, aber noch nicht gewinnen.
+              </p>
+            )}
             <button
               onClick={kampfStarten}
               className="mt-5 w-full rounded-2xl bg-red-600 px-6 py-4 text-xl font-black text-white shadow-xl active:translate-y-0.5"
@@ -789,6 +886,43 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
           <button onClick={onZurueck} className="mt-6 w-full rounded-xl bg-red-600 py-3 font-bold text-white">
             Zurück
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  /* ---------------------------------------------------- ONIX NOCH GESPERRT */
+  if (phase === "onixGesperrt") {
+    return (
+      <div className={rahmen}>
+        <div className="mx-auto max-w-xl">
+          <div className="mt-4 rounded-2xl border-2 border-yellow-500/50 bg-slate-800/70 p-6 text-center">
+            <div className="text-5xl">🔒</div>
+            <h2 className="mt-2 text-2xl font-black text-yellow-300">
+              Vier geschafft — und dann wird es still
+            </h2>
+            <p className="mt-3 text-slate-200">
+              Du hast Rattfratz, Zubat, Machollo und Arbok besiegt. Stark! Aber der
+              Boden bleibt ruhig: <b className="text-yellow-300">Onix</b> tritt erst an,
+              wenn du alle {AUFGABEN.length} Rätsel gelöst hast.
+            </p>
+            <p className="mt-3 text-lg font-black text-sky-200">
+              {geloestAnzahl} von {AUFGABEN.length} Rätseln gelöst —{" "}
+              {AUFGABEN.length - geloestAnzahl === 1
+                ? "es fehlt nur noch eines!"
+                : `es fehlen noch ${AUFGABEN.length - geloestAnzahl}.`}
+            </p>
+            <p className="mt-3 text-sm text-slate-300">
+              Jedes gelöste Rätsel macht dein Team stärker. Und Onix hat 340 KP — den
+              schaffst du nur mit einem vollständigen, trainierten Team.
+            </p>
+            <button
+              onClick={onZurueck}
+              className="mt-5 w-full rounded-2xl bg-yellow-500 px-6 py-4 text-xl font-black text-slate-900"
+            >
+              Zurück zu den Rätseln ⚡
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -859,7 +993,7 @@ function Arena({ epVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen }) {
               <div className="mt-2"><HpBalken hp={teamHp[aktivId]} max={aktivMax} freund /></div>
             </div>
             <div className="text-right text-xs font-bold text-sky-200">
-              💥 {staerkeVon(aktiv, aktivEp)}
+              💥 {staerkeVon(aktiv, aktivStand)}
               <br />
               {typFaktor(aktiv.typ, gegner.typ) > 1 && <span className="text-green-400">×2 stark!</span>}
               {typFaktor(aktiv.typ, gegner.typ) < 1 && <span className="text-slate-400">½ schwach</span>}
@@ -996,8 +1130,18 @@ function PokemonSchule() {
       0
     );
   }
+  /* Wie viele Raetsel dieses Pokemon sind geloest? Davon haengt die Entwicklung ab. */
+  function anzahlVon(pokemonId) {
+    return AUFGABEN.filter((x) => x.fuer === pokemonId && geloest.includes(x.id)).length;
+  }
+  /* Beides gebuendelt — so wird an den Anzeigestellen nichts vertauscht. */
+  function standVon(pokemonId) {
+    return { anzahl: anzahlVon(pokemonId), ep: epVon(pokemonId) };
+  }
+
   const epGesamt = Object.values(ergebnisse).reduce((s, e) => s + e.ep, 0);
-  const entwickelt = TEAM.filter((p) => p.stufen.indexOf(stufeVon(p, epVon(p.id))) > 0).length;
+  const entwickelt = TEAM.filter((p) => p.stufen.indexOf(stufeVon(p, standVon(p.id))) > 0).length;
+  const imTeamAnzahl = TEAM.filter((p) => imTeam(standVon(p.id))).length;
 
   /* ---------------- Speichern und Laden ---------------- */
   useEffect(() => {
@@ -1067,15 +1211,22 @@ function PokemonSchule() {
     if (Number.isNaN(n)) return;
     if (n !== a.antwort) {
       setVersuche((v) => v + 1);
-      setFeedback("nochmal");
+      /* Trifft sie genau den Fallen-Wert, hat sie sich nicht verrechnet, sondern
+         die Frage nicht fertig gelesen. Dann bekommt sie genau DAZU den Hinweis. */
+      setFeedback(a.falle && n === a.falle.wert ? "falle" : "nochmal");
       if (tonAn) Ton.nochmal();
       return;
     }
     const ep = epFuer(hilfen, zeigLoesung);
     const pokemon = TEAM_NACH_ID[a.fuer];
-    const epVorher = epVon(a.fuer);
-    const stufeVorher = stufeVon(pokemon, epVorher);
-    const stufeNachher = stufeVon(pokemon, epVorher + ep);
+    const standVorher = standVon(a.fuer);
+    const schonGeloest = geloest.includes(a.id);
+    const standNachher = {
+      anzahl: standVorher.anzahl + (schonGeloest ? 0 : 1),
+      ep: standVorher.ep + ep,
+    };
+    const stufeVorher = stufeVon(pokemon, standVorher);
+    const stufeNachher = stufeVon(pokemon, standNachher);
     const hatEntwickelt = stufeVorher.name !== stufeNachher.name;
 
     setErgebnisse({
@@ -1084,7 +1235,8 @@ function PokemonSchule() {
     });
     if (!geloest.includes(a.id)) setGeloest([...geloest, a.id]);
 
-    setRunde({ ep, pokemon, stufeVorher, stufeNachher, hatEntwickelt });
+    setRunde({ ep, pokemon, stufeVorher, stufeNachher, hatEntwickelt,
+               ersterVersuch: versuche === 0, hatteFalle: !!a.falle });
     setFeedback(null);
     if (tonAn) { Ton.richtig(); if (hatEntwickelt) setTimeout(() => Ton.entwicklung(), 450); }
     setView("belohnung");
@@ -1092,8 +1244,23 @@ function PokemonSchule() {
 
   const rahmen = "min-h-screen bg-gradient-to-b from-slate-900 to-slate-950 p-4";
 
-  /* Knopf, der immer in die Arena fuehrt — nie versteckt, nie gesperrt */
+  /* Arena-Knopf. Die Sperre ist SICHTBAR und benannt: sie soll wissen, dass
+     dort etwas wartet, und genau was noch fehlt. Nie stillschweigend verstecken. */
+  const arenaOffen = geloest.length >= ARENA_AB_RAETSEL;
+  const nochBisArena = ARENA_AB_RAETSEL - geloest.length;
+
   function ArenaKnopf({ klein }) {
+    if (!arenaOffen) {
+      return (
+        <div className={`w-full rounded-2xl border-2 border-dashed border-slate-600 bg-slate-800/50 text-center ${klein ? "py-3" : "px-4 py-4"}`}>
+          <p className="text-base font-black text-slate-300">🔒 Die Kampf-Arena ist zu</p>
+          <p className="mt-1 text-sm text-yellow-200">
+            Sie öffnet in Marmoria — noch {nochBisArena}{" "}
+            {nochBisArena === 1 ? "Rätsel" : "Rätsel"}, dann darfst du hinein.
+          </p>
+        </div>
+      );
+    }
     return (
       <button
         onClick={() => setView("arena")}
@@ -1101,7 +1268,7 @@ function PokemonSchule() {
           klein ? "py-3 text-base" : "px-6 py-4 text-xl"
         }`}
       >
-        🏟️ {abzeichen ? "Nochmal in die Arena" : "In die Arena!"}
+        🏟️ {abzeichen ? "Nochmal in die Arena" : fertig ? "In die Arena — Onix wartet!" : "In die Arena!"}
       </button>
     );
   }
@@ -1201,7 +1368,7 @@ function PokemonSchule() {
                     const i = AUFGABEN.indexOf(x);
                     const gesperrt = i > offenIdx && offenIdx !== -1;
                     const p = TEAM_NACH_ID[x.fuer];
-                    const stufe = stufeVon(p, epVon(x.fuer));
+                    const stufe = stufeVon(p, standVon(x.fuer));
                     return (
                       <button
                         key={x.id}
@@ -1227,9 +1394,8 @@ function PokemonSchule() {
 
           <div className="mt-5"><ArenaKnopf /></div>
           <p className="mt-2 text-center text-xs text-slate-400">
-            {entwickelt === 0
-              ? "Noch kein Pokémon entwickelt — in der Arena wird es dadurch schwer, aber du darfst jederzeit hinein."
-              : `${entwickelt} von ${TEAM.length} Pokémon entwickelt.`}
+            {entwickelt} von {TEAM.length} Pokémon entwickelt.
+            {arenaOffen && !fertig && " Onix tritt erst an, wenn alle Rätsel gelöst sind."}
           </p>
 
           <div className="mt-4 flex gap-2">
@@ -1257,7 +1423,7 @@ function PokemonSchule() {
         <div className="mx-auto max-w-xl">
           <h2 className="text-2xl font-black text-yellow-300">🧢 Mein Team</h2>
           <p className="mt-1 text-sm text-slate-400">
-            {entwickelt} von {TEAM.length} entwickelt · ⭐ {epGesamt} EP gesammelt
+            {imTeamAnzahl} von {TEAM.length} im Team · {entwickelt} entwickelt · ⭐ {epGesamt} EP
           </p>
 
           {abzeichen && (
@@ -1269,7 +1435,7 @@ function PokemonSchule() {
           )}
 
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {TEAM.map((p) => <PokemonKarte key={p.id} pokemon={p} ep={epVon(p.id)} />)}
+            {TEAM.map((p) => <PokemonKarte key={p.id} pokemon={p} stand={standVon(p.id)} />)}
           </div>
 
           <div className="mt-5 rounded-2xl border border-slate-700 bg-slate-800/50 p-4">
@@ -1296,10 +1462,12 @@ function PokemonSchule() {
   if (view === "arena") {
     return (
       <Arena
-        epVon={epVon}
+        standVon={standVon}
         tonAn={tonAn}
         setTonAn={setTonAn}
         abzeichen={abzeichen}
+        onixOffen={fertig}
+        geloestAnzahl={geloest.length}
         onGewonnen={() => setAbzeichen(true)}
         onZurueck={() => setView("karte")}
       />
@@ -1342,14 +1510,14 @@ function PokemonSchule() {
               </div>
             ) : (
               <div className="mt-5 rounded-2xl border border-slate-600 bg-slate-900/70 p-4">
-                <div className="text-4xl">{stufeVon(runde.pokemon, epVon(a.fuer)).emoji}</div>
+                <div className="text-4xl">{stufeVon(runde.pokemon, standVon(a.fuer)).emoji}</div>
                 <p className="mt-1 font-bold text-slate-100">
-                  {stufeVon(runde.pokemon, epVon(a.fuer)).name} bekommt {runde.ep} EP
+                  {stufeVon(runde.pokemon, standVon(a.fuer)).name} bekommt {runde.ep} EP
                 </p>
-                {naechsteStufe(runde.pokemon, epVon(a.fuer)) && (
+                {naechsteStufe(runde.pokemon, standVon(a.fuer)) && (
                   <p className="mt-1 text-sm text-slate-400">
-                    Noch {naechsteStufe(runde.pokemon, epVon(a.fuer)).ab - epVon(a.fuer)} EP bis{" "}
-                    {naechsteStufe(runde.pokemon, epVon(a.fuer)).name}
+                    Es entwickelt sich zu {naechsteStufe(runde.pokemon, standVon(a.fuer)).name},
+                    sobald du sein nächstes Rätsel löst.
                   </p>
                 )}
               </div>
@@ -1359,6 +1527,12 @@ function PokemonSchule() {
               ⭐ +{runde.ep} Erfahrungspunkte
               {runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"}
             </p>
+            {runde.ersterVersuch && runde.hatteFalle && (
+              <p className="mt-2 rounded-xl border border-orange-400/50 bg-orange-400/10 p-3 text-sm font-bold text-orange-200">
+                📖 Und du bist nicht in die Falle getappt — in dieser Aufgabe stand eine
+                Zahl, die gar nicht gefragt war. Du hast die Frage ganz gelesen.
+              </p>
+            )}
 
             <div className="mt-5 flex flex-col gap-2">
               {naechsteOffen !== -1 ? (
@@ -1421,7 +1595,8 @@ function PokemonSchule() {
   /* ============================ AUFGABE ============================ */
   const kap = KAPITEL.find((k) => k.id === a.kap);
   const pokemonDerAufgabe = TEAM_NACH_ID[a.fuer];
-  const stufeDerAufgabe = stufeVon(pokemonDerAufgabe, epVon(a.fuer));
+  const standDerAufgabe = standVon(a.fuer);
+  const stufeDerAufgabe = stufeVon(pokemonDerAufgabe, standDerAufgabe);
 
   return (
     <div className={rahmen}>
@@ -1478,6 +1653,15 @@ function PokemonSchule() {
           </button>
         </div>
 
+        {feedback === "falle" && a.falle && (
+          <div className="mt-3 rounded-xl border-2 border-orange-400 bg-orange-400/15 p-4 text-center">
+            <p className="text-2xl">📖</p>
+            <p className="mt-1 text-sm font-black uppercase tracking-widest text-orange-200">
+              Gerechnet hast du richtig!
+            </p>
+            <p className="mt-2 text-base font-bold text-orange-100">{a.falle.hinweis}</p>
+          </div>
+        )}
         {feedback === "nochmal" && (
           <p className="mt-3 rounded-xl bg-slate-800 p-3 text-center text-sm font-bold text-amber-200">
             Noch nicht ganz. Lies die Frage nochmal — und hol dir eine Hilfe, das ist erlaubt.
@@ -1502,9 +1686,9 @@ function PokemonSchule() {
                 Dieses Rätsel trainiert {stufeDerAufgabe.name}
               </p>
               <p className="text-xs text-slate-400">
-                ⭐ {epVon(a.fuer)} EP
-                {naechsteStufe(pokemonDerAufgabe, epVon(a.fuer))
-                  ? ` · noch ${naechsteStufe(pokemonDerAufgabe, epVon(a.fuer)).ab - epVon(a.fuer)} EP bis ${naechsteStufe(pokemonDerAufgabe, epVon(a.fuer)).name}`
+                ⭐ {standDerAufgabe.ep} EP
+                {naechsteStufe(pokemonDerAufgabe, standDerAufgabe)
+                  ? ` · löse dieses Rätsel, dann wird es ${naechsteStufe(pokemonDerAufgabe, standDerAufgabe).name}`
                   : " · voll entwickelt ✦"}
               </p>
             </div>

@@ -50,35 +50,73 @@ Die Reihenfolge in `src/game.jsx`:
 
 1. **Typen** (`TYPEN`, `STARK_GEGEN`, `typFaktor`) — wer ist gegen wen stark.
 2. **Team** (`TEAM`) — neun Pokémon, je mit `stufen` von schwach nach stark.
-   `ab` ist die EP-Schwelle für die Entwicklung, `basis` der Schaden, `hp` die
-   Lebenspunkte. Pikachu und Lapras entwickeln sich nicht.
 3. **EP-Regeln** — `EP_BASIS` 6 pro Rätsel, `EP_BONUS` 2 je nicht gebrauchter
-   Hilfe, also höchstens 12. Entwicklung bei `EP_STUFE_2` (7) und `EP_STUFE_3` (15).
+   Hilfe, also höchstens 12.
 4. **Kapitel und Rätsel** (`KAPITEL`, `AUFGABEN`) — 15 Rätsel. `fuer` sagt, welches
-   Pokémon die EP bekommt.
-5. **Arena** (`GEGNER`, Komponente `Arena`).
-6. **Ansichten** (Komponente `PokemonSchule`): start, karte, team, aufgabe,
-   belohnung, arena, urkunde.
+   Pokémon trainiert wird, `falle` ist die Lese-Falle (siehe unten).
+5. **Arena** (`ARENA_AB_RAETSEL`, `GEGNER`, Komponente `Arena`).
+6. **Ansichten** (Komponente `PokemonSchule`).
 
-## Ein neues Rätsel hinzufügen
+## Die drei Regeln, an denen der Fortschritt hängt
 
-Einen Eintrag in `AUFGABEN` ergänzen: fortlaufende `id`, `kap` für das Kapitel,
-`fuer` für das Pokémon, dazu `story`, `frage`, `antwort`, `einheit`, die drei
-Hilfen `blitzlicht`/`adlerauge`/`denkhilfe` und `loesung`. Karte, Zähler und
-Urkunde rechnen automatisch mit.
+Das ist der Kern. Sie sind bewusst getrennt — nicht zusammenlegen:
 
-Wer wie viele Rätsel bekommt, bestimmt, wie weit es sich entwickeln kann:
-zwei Rätsel (bis 24 EP) reichen für die dritte Stufe, eines (bis 12 EP) für die
-zweite.
+1. **Ein Pokémon kommt erst ins Team, wenn eines seiner Rätsel gelöst ist.**
+   `imTeam(stand)` prüft das. Dadurch wächst die Truppe mit dem Fortschritt: nach
+   6 Rätseln kämpfen 5 von 9, nach allen 15 sind alle dabei. Das ist der
+   wichtigste Schwierigkeitsregler.
+2. **Die Entwicklung hängt allein an der ANZAHL gelöster Rätsel**, nicht an den EP
+   (`stufeVon(pokemon, stand)` nutzt `stand.anzahl`). Wer viele Hilfen braucht,
+   entwickelt sein Team genauso weit. Hilfe holen darf nie den Sieg kosten.
+3. **Die EP geben nur einen kleinen Stärkebonus** (`+ep/6` Schaden, `+ep/4` KP).
+   Selbstständig lösen lohnt sich, ist aber keine Voraussetzung.
+
+Deshalb wird überall `standVon(id)` übergeben — `{ anzahl, ep }` gebündelt, damit
+die beiden nicht vertauscht werden können.
+
+## Die zwei Sperren
+
+- **Arena** öffnet ab `ARENA_AB_RAETSEL` (6) gelösten Rätseln, also in Marmoria.
+- **Onix** tritt erst an, wenn ALLE Rätsel gelöst sind (`onixOffen`).
+
+Beide Sperren sind **sichtbar und benannt**: der Arena-Knopf zeigt, wie viele
+Rätsel noch fehlen; die Gegnerliste zeigt Onix mit Schloss; nach dem vierten Sieg
+erklärt ein eigener Bildschirm, was noch fehlt. Nie stillschweigend sperren —
+im Vorgängerspiel war eine unsichtbare Schwelle der schlimmste Fehler.
+
+## Rechenarten
+
+Die 15 Rätsel: 12× malnehmen, 10× minus, 5× teilen, 3× plus — meist kombiniert
+über zwei bis drei Schritte. Malnehmen und Teilen bleiben im **kleinen 1×1**
+(Faktoren bis 9, Divisionen gehen glatt auf).
+
+Die Kampfaufgaben (`kampfRechnung`) mischen 40 % mal, 25 % minus, 20 % teilen,
+15 % plus. Alle Ergebnisse bleiben zwischen 2 und 100.
+
+## Lese-Fallen
+
+Das genaue Fertiglesen der Frage ist das eigentliche Übungsziel. Deshalb hat fast
+jedes Rätsel ein Feld `falle: { wert, hinweis }`: `wert` ist das Ergebnis, das
+herauskommt, wenn man die Frage NICHT fertig liest (eine Zahl mitzählt, die nicht
+gefragt war, oder in der Mitte aufhört). Trifft ihre Antwort genau diesen Wert,
+bekommt sie nicht das allgemeine „nochmal", sondern die konkrete Diagnose:
+*„Gerechnet hast du richtig — aber die 5 vom Tisch waren nicht gefragt."*
+
+Löst sie ein Fallen-Rätsel im ersten Versuch, wird das ausdrücklich gelobt.
+
+Beim Ergänzen neuer Rätsel: `falle` mitdenken. Ein Rätsel ohne Falle ist eine
+verpasste Übung.
 
 ## Wichtige Fallen — hier ist schon etwas schiefgegangen
 
 - **Spielstand**: `localStorage`, Schlüssel `florentina-pokemon`, Format
   `{ geloest, ergebnisse, mut, abzeichen }`. **Nicht umbenennen** — sonst ist der
   Fortschritt weg. Ältere Spielstände ohne `abzeichen` funktionieren weiter.
-- **Keine unsichtbaren Schwellen.** Die Arena ist immer erreichbar. Erarbeitete
-  EP machen das Team *stärker*, sie entscheiden nicht über den Zugang. Inhalt, der
-  sich versteckt, ist der schlimmste Fall — genau das ist im Vorgängerspiel passiert.
+- **Sperren ja, unsichtbare Sperren nie.** Seit Version 2.0 ist die Arena bis
+  Marmoria zu und Onix bis zum letzten Rätsel gesperrt — das ist gewollt, weil ein
+  Ansporn, der schon eingelöst ist, keiner ist. Aber jede Sperre muss auf dem
+  Bildschirm stehen und sagen, was genau noch fehlt. Im Vorgängerspiel hat eine
+  stille Schwelle das Finale unsichtbar gemacht; das darf nicht wieder passieren.
 - **Versionsnummer** steht unten am Startbildschirm (`VERSION`). Bei jeder
   Veröffentlichung hochzählen. Wenn am iPad etwas fehlt, zeigt die Nummer sofort,
   ob das Gerät die neue Fassung hat.
@@ -91,11 +129,23 @@ zweite.
 
 ## Balance der Arena
 
-Gegner: 80 / 115 / 155 / 205 / 280 KP bei 5 / 7 / 9 / 11 / 14 Schaden, nach jedem
-Sieg heilt das Team 25 KP. Simuliert ergibt das bei voll entwickeltem Team etwa
-32–45 Rechenzüge (10–15 Minuten); ohne gelöste Rätsel ist die Arena im ersten
-Anlauf nicht zu gewinnen. Verlieren kostet keinen Fortschritt: es geht beim
-gleichen Gegner mit geheiltem Team weiter.
+Gegner: 80 / 115 / 200 / 290 / 340 KP bei 5 / 8 / 12 / 15 / 17 Schaden, nach jedem
+Sieg heilt das Team 20 KP. Typ-Vorteil verdoppelt den Schaden, Abwehr halbiert ihn.
 
-Ein Typ-Vorteil verdoppelt den Schaden, eine Abwehr halbiert ihn — das ist der
-Hebel, mit dem sich die Länge etwa auf ein Drittel drücken lässt.
+Simuliert (400 Durchläufe je Fall, `scratchpad/wall-sim.mjs`):
+
+| Fortschritt | klug gespielt | unaufmerksam |
+|---|---|---|
+| 6 Rätsel (Marmoria) | 0 %, Wand bei Arbok | 0 % |
+| 9 Rätsel | 99 %, 35 Züge | 22 % |
+| 12 Rätsel | 100 %, 32 Züge | 100 % |
+| alle 15, ohne Hilfe | 100 %, 41 Züge | 85 % |
+| alle 15, viel Hilfe | 100 %, 45 Züge | 46 % |
+
+Zwei Bedingungen müssen erhalten bleiben, wenn man an den Zahlen dreht:
+
+- **In Marmoria darf sie nicht durchkommen** — der Ansporn ist, alle Rätsel zu lösen.
+- **Mit allen 15 Rätseln muss sie gewinnen, egal wie viele Hilfen sie gebraucht hat.**
+
+Verlieren kostet keinen Fortschritt: es geht beim gleichen Gegner mit geheiltem
+Team weiter.
