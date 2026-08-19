@@ -6,7 +6,14 @@ const { useState, useEffect, useRef } = React;
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "2.0";
+const VERSION = "2.1";
+
+/* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
+   ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
+function genitiv(name) {
+  if (!name) return "";
+  return /[sxzß]$/i.test(name) ? name + "\u2019" : name + "s";
+}
 const SPEICHER_KEY = "florentina-pokemon";
 
 /* ------------------------------------------------------------
@@ -1119,6 +1126,8 @@ function PokemonSchule() {
   const [zeigLoesung, setZeigLoesung] = useState(false);
   const [tonAn, setTonAn] = useState(true);
   const [geladen, setGeladen] = useState(false);
+  const [name, setName] = useState("");
+  const [nameEingabe, setNameEingabe] = useState("");
 
   const a = AUFGABEN[idx];
   const fertig = geloest.length === AUFGABEN.length;
@@ -1154,6 +1163,9 @@ function PokemonSchule() {
           setErgebnisse(d.ergebnisse || {});
           setMut(d.mut || 0);
           setAbzeichen(d.abzeichen || false);
+          /* Spielstaende von vor der Namenseingabe gehoeren Florentina — sie soll
+             nicht ploetzlich nach ihrem Namen gefragt werden. */
+          setName(d.name || ((d.geloest && d.geloest.length) ? "Florentina" : ""));
         }
       } catch (e) {
         /* erster Start */
@@ -1168,22 +1180,28 @@ function PokemonSchule() {
       try {
         await window.speicher.set(
           SPEICHER_KEY,
-          JSON.stringify({ geloest, ergebnisse, mut, abzeichen })
+          JSON.stringify({ geloest, ergebnisse, mut, abzeichen, name })
         );
       } catch (e) {
         /* kein Speicher — Spiel laeuft trotzdem */
       }
     })();
-  }, [geloest, ergebnisse, mut, abzeichen, geladen]);
+  }, [geloest, ergebnisse, mut, abzeichen, name, geladen]);
+
+  /* Auch der Tab-Titel und das Symbol am Home-Bildschirm sollen den Namen tragen. */
+  useEffect(() => {
+    document.title = name ? genitiv(name) + " Pokémon-Schule" : "Pokémon-Schule";
+  }, [name]);
 
   async function allesZuruecksetzen() {
     setGeloest([]); setErgebnisse({}); setMut(0); setAbzeichen(false);
+    setName(""); setNameEingabe("");
     setRunde(null); setIdx(0); setEingabe("");
     setHilfen({ blitzlicht: false, adlerauge: false, denkhilfe: false });
     setVersuche(0); setFeedback(null); setZeigLoesung(false);
     setView("start");
     try {
-      await window.speicher.set(SPEICHER_KEY, JSON.stringify({ geloest: [], ergebnisse: {}, mut: 0, abzeichen: false }));
+      await window.speicher.set(SPEICHER_KEY, JSON.stringify({ geloest: [], ergebnisse: {}, mut: 0, abzeichen: false, name: "" }));
     } catch (e) { /* egal */ }
   }
 
@@ -1273,6 +1291,57 @@ function PokemonSchule() {
     );
   }
 
+  /* ============================ NAME ============================ */
+  /* Erscheint nur beim allerersten Start. Danach steckt der Name im Spielstand
+     dieses Geraets — andere Kinder auf anderen Geraeten sind davon unberuehrt. */
+  if (geladen && !name) {
+    const sauber = nameEingabe.trim();
+    return (
+      <div className={rahmen}>
+        <div className="mx-auto max-w-md">
+          <div className="pt-10 text-center">
+            <div className="text-6xl">⚡</div>
+            <h1 className="mt-3 text-3xl font-black text-yellow-300">Pokémon-Schule</h1>
+            <p className="mt-2 text-slate-300">Bevor es losgeht:</p>
+          </div>
+          <div className="mt-6 rounded-2xl bg-amber-50 p-6 text-stone-800 shadow-xl">
+            <p className="text-xl font-black">Wie heißt du?</p>
+            <p className="mt-2 text-sm text-stone-600">
+              Dein Name steht dann in der Urkunde und im Brief von Professor Eich.
+            </p>
+            <input
+              type="text"
+              value={nameEingabe}
+              maxLength={14}
+              autoFocus
+              onChange={(e) => setNameEingabe(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && sauber) setName(sauber); }}
+              placeholder="Dein Name"
+              className="mt-4 w-full rounded-xl border-2 border-stone-400 bg-white px-4 py-4 text-center text-2xl font-black text-stone-800 outline-none focus:border-red-600"
+            />
+            {sauber && (
+              <p className="mt-3 text-center text-sm text-stone-600">
+                Wird dann <b>{genitiv(sauber)} Pokémon-Schule</b> heißen.
+              </p>
+            )}
+            <button
+              onClick={() => { if (sauber) setName(sauber); }}
+              disabled={!sauber}
+              className={`mt-4 w-full rounded-2xl px-6 py-4 text-xl font-black shadow-xl ${
+                sauber ? "bg-red-600 text-white active:translate-y-0.5" : "bg-stone-300 text-stone-500"
+              }`}
+            >
+              Los geht&apos;s! ⚡
+            </button>
+          </div>
+          <p className="mt-5 text-center text-xs text-slate-500">
+            Der Name bleibt nur auf diesem Gerät. Version {VERSION}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   /* ============================ START ============================ */
   if (view === "start") {
     return (
@@ -1284,12 +1353,12 @@ function PokemonSchule() {
               Pokémon-Liga · Alabastia
             </p>
             <h1 className="mt-2 text-4xl font-black leading-tight text-yellow-300">
-              Florentinas<br />Pokémon-Schule
+              {genitiv(name)}<br />Pokémon-Schule
             </h1>
           </div>
 
           <div className="mt-6 rounded-2xl bg-amber-50 p-6 text-stone-800 shadow-xl">
-            <p className="text-lg">Liebe Florentina,</p>
+            <p className="text-lg">Hallo {name},</p>
             <p className="mt-3 text-lg leading-relaxed">
               du bekommst heute dein erstes Team. Neun Pokémon warten auf dich —
               <b> Pikachu</b> ist von Anfang an dabei.
@@ -1450,8 +1519,14 @@ function PokemonSchule() {
           <button onClick={() => setView("karte")} className="mt-5 w-full rounded-xl bg-yellow-500 py-3 font-bold text-slate-900">
             Zurück zur Reise
           </button>
+          <button
+            onClick={() => { setNameEingabe(name); setName(""); }}
+            className="mt-2 w-full rounded-xl border border-slate-600 py-2 text-xs text-slate-300"
+          >
+            Namen ändern (aktuell: {name})
+          </button>
           <button onClick={allesZuruecksetzen} className="mt-2 w-full rounded-xl border border-red-500/40 py-2 text-xs text-red-300">
-            Alles von vorne beginnen (für Erwachsene) — löscht Team und Fortschritt
+            Alles von vorne beginnen (für Erwachsene) — löscht Team, Fortschritt und Namen
           </button>
         </div>
       </div>
@@ -1562,19 +1637,19 @@ function PokemonSchule() {
         <div className="mx-auto mt-4 max-w-lg rounded-2xl border-8 border-double border-yellow-500 bg-amber-50 p-8 text-center shadow-2xl">
           <div className="text-5xl">🏆</div>
           <p className="mt-2 text-sm uppercase tracking-[0.3em] text-red-800">Pokémon-Liga</p>
-          <h2 className="mt-3 text-3xl font-black text-stone-900">Pokémon-Trainerin</h2>
-          <p className="mt-4 text-4xl font-black text-red-800">Florentina</p>
+          <h2 className="mt-3 text-3xl font-black text-stone-900">Urkunde</h2>
+          <p className="mt-4 text-4xl font-black text-red-800">{name}</p>
           <p className="mt-4 text-lg text-stone-700">
             hat alle {AUFGABEN.length} Rätsel gelöst, dabei {epGesamt} Erfahrungspunkte
             gesammelt und {entwickelt} Pokémon entwickelt.{" "}
             {mut > 0
-              ? `${mut} Mal hat sie sich getraut, eine Hilfe zu holen. `
+              ? `Dabei wurde ${mut} Mal eine Hilfe geholt — das war klug. `
               : "Und das ganz ohne eine einzige Hilfe. "}
-            Sie hat genau gelesen, in Schritten gedacht und nicht aufgegeben.
+            Genau gelesen, in Schritten gedacht und nicht aufgegeben.
           </p>
           {abzeichen && (
             <p className="mt-4 text-lg font-bold text-red-800">
-              🏅 Und in der Arena hat sie alle fünf Gegner besiegt, auch Onix.
+              🏅 Und in der Arena wurden alle fünf Gegner besiegt, auch Onix.
             </p>
           )}
           <p className="mt-4 text-3xl">⚡ 🏅 🔥</p>

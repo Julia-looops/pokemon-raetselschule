@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-title" content="Pokemon-Schule">
 <meta name="theme-color" content="#0f172a">
 <meta name="robots" content="noindex, nofollow">
-<title>Florentinas Pokemon-Schule</title>
+<title>Pokemon-Schule</title>
 <script>
 /**
  * @license React
@@ -413,7 +413,14 @@ const {
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "2.0";
+const VERSION = "2.1";
+
+/* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
+   ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
+function genitiv(name) {
+  if (!name) return "";
+  return /[sxzß]$/i.test(name) ? name + "\u2019" : name + "s";
+}
 const SPEICHER_KEY = "florentina-pokemon";
 
 /* ------------------------------------------------------------
@@ -1788,6 +1795,8 @@ function PokemonSchule() {
   const [zeigLoesung, setZeigLoesung] = useState(false);
   const [tonAn, setTonAn] = useState(true);
   const [geladen, setGeladen] = useState(false);
+  const [name, setName] = useState("");
+  const [nameEingabe, setNameEingabe] = useState("");
   const a = AUFGABEN[idx];
   const fertig = geloest.length === AUFGABEN.length;
 
@@ -1821,6 +1830,9 @@ function PokemonSchule() {
           setErgebnisse(d.ergebnisse || {});
           setMut(d.mut || 0);
           setAbzeichen(d.abzeichen || false);
+          /* Spielstaende von vor der Namenseingabe gehoeren Florentina — sie soll
+             nicht ploetzlich nach ihrem Namen gefragt werden. */
+          setName(d.name || (d.geloest && d.geloest.length ? "Florentina" : ""));
         }
       } catch (e) {
         /* erster Start */
@@ -1836,18 +1848,26 @@ function PokemonSchule() {
           geloest,
           ergebnisse,
           mut,
-          abzeichen
+          abzeichen,
+          name
         }));
       } catch (e) {
         /* kein Speicher — Spiel laeuft trotzdem */
       }
     })();
-  }, [geloest, ergebnisse, mut, abzeichen, geladen]);
+  }, [geloest, ergebnisse, mut, abzeichen, name, geladen]);
+
+  /* Auch der Tab-Titel und das Symbol am Home-Bildschirm sollen den Namen tragen. */
+  useEffect(() => {
+    document.title = name ? genitiv(name) + " Pokémon-Schule" : "Pokémon-Schule";
+  }, [name]);
   async function allesZuruecksetzen() {
     setGeloest([]);
     setErgebnisse({});
     setMut(0);
     setAbzeichen(false);
+    setName("");
+    setNameEingabe("");
     setRunde(null);
     setIdx(0);
     setEingabe("");
@@ -1865,7 +1885,8 @@ function PokemonSchule() {
         geloest: [],
         ergebnisse: {},
         mut: 0,
-        abzeichen: false
+        abzeichen: false,
+        name: ""
       }));
     } catch (e) {/* egal */}
   }
@@ -1965,6 +1986,53 @@ function PokemonSchule() {
     }, "\uD83C\uDFDF\uFE0F ", abzeichen ? "Nochmal in die Arena" : fertig ? "In die Arena — Onix wartet!" : "In die Arena!");
   }
 
+  /* ============================ NAME ============================ */
+  /* Erscheint nur beim allerersten Start. Danach steckt der Name im Spielstand
+     dieses Geraets — andere Kinder auf anderen Geraeten sind davon unberuehrt. */
+  if (geladen && !name) {
+    const sauber = nameEingabe.trim();
+    return /*#__PURE__*/React.createElement("div", {
+      className: rahmen
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "mx-auto max-w-md"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "pt-10 text-center"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "text-6xl"
+    }, "\u26A1"), /*#__PURE__*/React.createElement("h1", {
+      className: "mt-3 text-3xl font-black text-yellow-300"
+    }, "Pok\xE9mon-Schule"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-slate-300"
+    }, "Bevor es losgeht:")), /*#__PURE__*/React.createElement("div", {
+      className: "mt-6 rounded-2xl bg-amber-50 p-6 text-stone-800 shadow-xl"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xl font-black"
+    }, "Wie hei\xDFt du?"), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-sm text-stone-600"
+    }, "Dein Name steht dann in der Urkunde und im Brief von Professor Eich."), /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: nameEingabe,
+      maxLength: 14,
+      autoFocus: true,
+      onChange: e => setNameEingabe(e.target.value),
+      onKeyDown: e => {
+        if (e.key === "Enter" && sauber) setName(sauber);
+      },
+      placeholder: "Dein Name",
+      className: "mt-4 w-full rounded-xl border-2 border-stone-400 bg-white px-4 py-4 text-center text-2xl font-black text-stone-800 outline-none focus:border-red-600"
+    }), sauber && /*#__PURE__*/React.createElement("p", {
+      className: "mt-3 text-center text-sm text-stone-600"
+    }, "Wird dann ", /*#__PURE__*/React.createElement("b", null, genitiv(sauber), " Pok\xE9mon-Schule"), " hei\xDFen."), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        if (sauber) setName(sauber);
+      },
+      disabled: !sauber,
+      className: `mt-4 w-full rounded-2xl px-6 py-4 text-xl font-black shadow-xl ${sauber ? "bg-red-600 text-white active:translate-y-0.5" : "bg-stone-300 text-stone-500"}`
+    }, "Los geht's! \u26A1")), /*#__PURE__*/React.createElement("p", {
+      className: "mt-5 text-center text-xs text-slate-500"
+    }, "Der Name bleibt nur auf diesem Ger\xE4t. Version ", VERSION)));
+  }
+
   /* ============================ START ============================ */
   if (view === "start") {
     return /*#__PURE__*/React.createElement("div", {
@@ -1979,11 +2047,11 @@ function PokemonSchule() {
       className: "mt-2 text-xs font-bold uppercase tracking-[0.3em] text-yellow-300"
     }, "Pok\xE9mon-Liga \xB7 Alabastia"), /*#__PURE__*/React.createElement("h1", {
       className: "mt-2 text-4xl font-black leading-tight text-yellow-300"
-    }, "Florentinas", /*#__PURE__*/React.createElement("br", null), "Pok\xE9mon-Schule")), /*#__PURE__*/React.createElement("div", {
+    }, genitiv(name), /*#__PURE__*/React.createElement("br", null), "Pok\xE9mon-Schule")), /*#__PURE__*/React.createElement("div", {
       className: "mt-6 rounded-2xl bg-amber-50 p-6 text-stone-800 shadow-xl"
     }, /*#__PURE__*/React.createElement("p", {
       className: "text-lg"
-    }, "Liebe Florentina,"), /*#__PURE__*/React.createElement("p", {
+    }, "Hallo ", name, ","), /*#__PURE__*/React.createElement("p", {
       className: "mt-3 text-lg leading-relaxed"
     }, "du bekommst heute dein erstes Team. Neun Pok\xE9mon warten auf dich \u2014", /*#__PURE__*/React.createElement("b", null, " Pikachu"), " ist von Anfang an dabei."), /*#__PURE__*/React.createElement("p", {
       className: "mt-3 text-lg leading-relaxed"
@@ -2116,9 +2184,15 @@ function PokemonSchule() {
       onClick: () => setView("karte"),
       className: "mt-5 w-full rounded-xl bg-yellow-500 py-3 font-bold text-slate-900"
     }, "Zur\xFCck zur Reise"), /*#__PURE__*/React.createElement("button", {
+      onClick: () => {
+        setNameEingabe(name);
+        setName("");
+      },
+      className: "mt-2 w-full rounded-xl border border-slate-600 py-2 text-xs text-slate-300"
+    }, "Namen \xE4ndern (aktuell: ", name, ")"), /*#__PURE__*/React.createElement("button", {
       onClick: allesZuruecksetzen,
       className: "mt-2 w-full rounded-xl border border-red-500/40 py-2 text-xs text-red-300"
-    }, "Alles von vorne beginnen (f\xFCr Erwachsene) \u2014 l\xF6scht Team und Fortschritt")));
+    }, "Alles von vorne beginnen (f\xFCr Erwachsene) \u2014 l\xF6scht Team, Fortschritt und Namen")));
   }
 
   /* ============================ ARENA ============================ */
@@ -2212,13 +2286,13 @@ function PokemonSchule() {
       className: "mt-2 text-sm uppercase tracking-[0.3em] text-red-800"
     }, "Pok\xE9mon-Liga"), /*#__PURE__*/React.createElement("h2", {
       className: "mt-3 text-3xl font-black text-stone-900"
-    }, "Pok\xE9mon-Trainerin"), /*#__PURE__*/React.createElement("p", {
+    }, "Urkunde"), /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-4xl font-black text-red-800"
-    }, "Florentina"), /*#__PURE__*/React.createElement("p", {
+    }, name), /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-lg text-stone-700"
-    }, "hat alle ", AUFGABEN.length, " R\xE4tsel gel\xF6st, dabei ", epGesamt, " Erfahrungspunkte gesammelt und ", entwickelt, " Pok\xE9mon entwickelt.", " ", mut > 0 ? `${mut} Mal hat sie sich getraut, eine Hilfe zu holen. ` : "Und das ganz ohne eine einzige Hilfe. ", "Sie hat genau gelesen, in Schritten gedacht und nicht aufgegeben."), abzeichen && /*#__PURE__*/React.createElement("p", {
+    }, "hat alle ", AUFGABEN.length, " R\xE4tsel gel\xF6st, dabei ", epGesamt, " Erfahrungspunkte gesammelt und ", entwickelt, " Pok\xE9mon entwickelt.", " ", mut > 0 ? `Dabei wurde ${mut} Mal eine Hilfe geholt — das war klug. ` : "Und das ganz ohne eine einzige Hilfe. ", "Genau gelesen, in Schritten gedacht und nicht aufgegeben."), abzeichen && /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-lg font-bold text-red-800"
-    }, "\uD83C\uDFC5 Und in der Arena hat sie alle f\xFCnf Gegner besiegt, auch Onix."), /*#__PURE__*/React.createElement("p", {
+    }, "\uD83C\uDFC5 Und in der Arena wurden alle f\xFCnf Gegner besiegt, auch Onix."), /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-3xl"
     }, "\u26A1 \uD83C\uDFC5 \uD83D\uDD25"), /*#__PURE__*/React.createElement("p", {
       className: "mt-2 italic text-stone-600"
