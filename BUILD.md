@@ -124,6 +124,16 @@ verpasste Übung.
   *Funktion* übergeben werden, sonst deutet JavaScript Folgen wie `$&` im
   minifizierten Bibliothekscode als Sonderbefehle und beschädigt sie. `tools/build.mjs`
   prüft deshalb nach dem Einsetzen, dass jede Bibliothek unverändert in der Seite steht.
+- **Helle und dunkle Karten nicht verwechseln.** Der dunkle Rahmen nutzt
+  `text-slate-*`, die cremefarbenen Karten (`bg-amber-50`) brauchen `text-stone-*`.
+  Ein `text-slate-100` auf der hellen Karte ist praktisch unlesbar — genau das ist
+  beim Aufgabentext passiert. Nach Farbänderungen den Kontrast messen, nicht
+  schätzen: im Browser über `getComputedStyle` Vordergrund und Hintergrund holen
+  und den WCAG-Kontrast rechnen; alles unter 4,5 ist zu wenig.
+- **Lob nur, wenn es stimmt.** Die Lese-Fallen haben ein Feld `art`
+  (`zusatzzahl`, `mittendrin`, `rechenart`, `verlesen`). Gelobt wird über
+  `LOB_FUER_FALLE` nur bei `zusatzzahl` und `verlesen`. Eine pauschale Lobmeldung
+  erschien vorher bei fast jedem Rätsel und behauptete dabei meist etwas Falsches.
 - **Ton-Methoden immer am Objekt aufrufen** (`Ton.treffer()`), nie vom Objekt
   gelöst — sonst ist `this` undefiniert und der Fehler bricht mitten im Spielzug ab.
 
