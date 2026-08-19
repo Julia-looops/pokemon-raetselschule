@@ -413,7 +413,7 @@ const {
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "2.1";
+const VERSION = "2.3";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -723,6 +723,14 @@ function epFuer(hilfen, loesungAufgedeckt) {
   const benutzt = ["blitzlicht", "adlerauge", "denkhilfe"].filter(k => hilfen[k]).length;
   return EP_BASIS + (3 - benutzt) * EP_BONUS;
 }
+
+/* Lob nach dem Loesen — nur fuer die Fallen, bei denen das genaue LESEN
+   den Unterschied macht. Bei "mittendrin" und "rechenart" waere es Wandtapete:
+   das trifft fast jedes Raetsel, und die normale Rueckmeldung lobt schon. */
+const LOB_FUER_FALLE = {
+  zusatzzahl: "In dieser Aufgabe stand eine Zahl, die gar nicht gefragt war — und du hast sie liegen gelassen. Genau hingeschaut!",
+  verlesen: "Hier hätte ein einziges zu schnell gelesenes Wort das Ergebnis verdorben. Du hast genau gelesen."
+};
 const HILFEN = [{
   id: "blitzlicht",
   emoji: "💡",
@@ -780,7 +788,8 @@ const AUFGABEN = [{
   loesung: "6 × 7 = 42. In den Regalen stehen 42 Pokébälle. Die 5 auf dem Tisch zählen nicht mit.",
   falle: {
     wert: 47,
-    hinweis: "Du hast die 5 Bälle vom Tisch mitgezählt. Die Frage will nur die Regale — lies sie nochmal ganz."
+    hinweis: "Du hast die 5 Bälle vom Tisch mitgezählt. Die Frage will nur die Regale — lies sie nochmal ganz.",
+    art: "zusatzzahl"
   }
 }, {
   id: 2,
@@ -808,7 +817,8 @@ const AUFGABEN = [{
   loesung: "8 × 9 = 72, und 72 − 24 = 48. Es sitzen noch 48 Taubsi im Gras.",
   falle: {
     wert: 72,
-    hinweis: "72 ist die Zahl VORHER. Der Satz geht noch weiter: 24 fliegen weg."
+    hinweis: "72 ist die Zahl VORHER. Der Satz geht noch weiter: 24 fliegen weg.",
+    art: "mittendrin"
   }
 }, {
   id: 4,
@@ -824,7 +834,8 @@ const AUFGABEN = [{
   loesung: "48 : 6 = 8. An jedem Baum hängen 8 Raupy.",
   falle: {
     wert: 42,
-    hinweis: "Du hast 48 − 6 gerechnet. Gleichmäßig aufteilen heißt aber teilen, nicht abziehen."
+    hinweis: "Du hast 48 − 6 gerechnet. Gleichmäßig aufteilen heißt aber teilen, nicht abziehen.",
+    art: "rechenart"
   }
 }, {
   id: 5,
@@ -840,7 +851,8 @@ const AUFGABEN = [{
   loesung: "7 × 8 = 56, und 56 − 15 = 41. Am Morgen wachsen noch 41 Samen.",
   falle: {
     wert: 56,
-    hinweis: "56 sind alle gepflanzten Samen. Die Nacht kommt aber noch — 15 werden gefressen."
+    hinweis: "56 sind alle gepflanzten Samen. Die Nacht kommt aber noch — 15 werden gefressen.",
+    art: "mittendrin"
   }
 }, {
   id: 6,
@@ -856,7 +868,8 @@ const AUFGABEN = [{
   loesung: "36 : 4 = 9, und 9 + 7 = 16. In diesem Nest liegen 16 Beeren.",
   falle: {
     wert: 9,
-    hinweis: "9 liegt in jedem Nest. In DIESES Nest kommen aber noch 7 dazu — lies den letzten Satz nochmal."
+    hinweis: "9 liegt in jedem Nest. In DIESES Nest kommen aber noch 7 dazu — lies den letzten Satz nochmal.",
+    art: "mittendrin"
   }
 }, {
   id: 7,
@@ -872,7 +885,8 @@ const AUFGABEN = [{
   loesung: "9 × 8 = 72, und 72 − 27 = 45. In den Türmen stecken noch 45 Nüsse.",
   falle: {
     wert: 51,
-    hinweis: "Du hast die 6 einzelnen Nüsse dazugezählt. Die haben nie zu einem Turm gehört."
+    hinweis: "Du hast die 6 einzelnen Nüsse dazugezählt. Die haben nie zu einem Turm gehört.",
+    art: "zusatzzahl"
   }
 }, {
   id: 8,
@@ -888,7 +902,8 @@ const AUFGABEN = [{
   loesung: "63 : 7 = 9, und 9 − 4 = 5. In diesem Fass sind noch 5 Liter.",
   falle: {
     wert: 59,
-    hinweis: "Du hast 4 vom ganzen Wasser abgezogen. Erst aufteilen, dann von dem EINEN Fass abziehen."
+    hinweis: "Du hast 4 vom ganzen Wasser abgezogen. Erst aufteilen, dann von dem EINEN Fass abziehen.",
+    art: "rechenart"
   }
 }, {
   id: 9,
@@ -904,7 +919,8 @@ const AUFGABEN = [{
   loesung: "7 × 9 = 63 Steine. Weggeräumt: 3 × 9 = 27. Also 63 − 27 = 36 Steine. (Oder gleich: 4 Haufen × 9 = 36.)",
   falle: {
     wert: 60,
-    hinweis: "Du hast nur 3 Steine abgezogen. Weggeräumt wurden 3 ganze HAUFEN — jeder mit 9 Steinen."
+    hinweis: "Du hast nur 3 Steine abgezogen. Weggeräumt wurden 3 ganze HAUFEN — jeder mit 9 Steinen.",
+    art: "verlesen"
   }
 }, {
   id: 10,
@@ -920,7 +936,8 @@ const AUFGABEN = [{
   loesung: "8 × 9 = 72, und 72 − 5 = 67. Lapras hat 67 Muscheln an Bord.",
   falle: {
     wert: 87,
-    hinweis: "Du hast die 20 vom Strand dazugezählt. Die sind gerade nicht an Bord."
+    hinweis: "Du hast die 20 vom Strand dazugezählt. Die sind gerade nicht an Bord.",
+    art: "zusatzzahl"
   }
 }, {
   id: 11,
@@ -936,7 +953,8 @@ const AUFGABEN = [{
   loesung: "40 : 5 = 8 Boote pro Reihe, und 8 × 3 = 24. Es fahren 24 Boote hinaus.",
   falle: {
     wert: 8,
-    hinweis: "8 ist EINE Reihe. Hinaus fahren aber 3 Reihen."
+    hinweis: "8 ist EINE Reihe. Hinaus fahren aber 3 Reihen.",
+    art: "mittendrin"
   }
 }, {
   id: 12,
@@ -952,7 +970,8 @@ const AUFGABEN = [{
   loesung: "9 × 7 = 63, und 63 − 18 = 45. Morgens sind noch 45 Steine warm.",
   falle: {
     wert: 63,
-    hinweis: "63 sind alle Steine am Abend. Über Nacht werden 18 davon kalt."
+    hinweis: "63 sind alle Steine am Abend. Über Nacht werden 18 davon kalt.",
+    art: "mittendrin"
   }
 }, {
   id: 13,
@@ -968,7 +987,8 @@ const AUFGABEN = [{
   loesung: "9 × 8 = 72, dann 72 − 25 = 47, und 47 + 12 = 59. Am Ende stehen 59 Personen in der Schlange.",
   falle: {
     wert: 47,
-    hinweis: "Bei 47 hast du in der Mitte aufgehört. Der letzte Satz sagt: 12 stellen sich noch an."
+    hinweis: "Bei 47 hast du in der Mitte aufgehört. Der letzte Satz sagt: 12 stellen sich noch an.",
+    art: "mittendrin"
   }
 }, {
   id: 14,
@@ -984,7 +1004,8 @@ const AUFGABEN = [{
   loesung: "9 × 6 = 54 Sprünge, und 54 : 6 = 9. An einem Tag macht Glumanda 9 Sprünge.",
   falle: {
     wert: 54,
-    hinweis: "54 sind alle Sprünge zusammen. Sie werden noch auf 6 Tage verteilt."
+    hinweis: "54 sind alle Sprünge zusammen. Sie werden noch auf 6 Tage verteilt.",
+    art: "mittendrin"
   }
 }, {
   id: 15,
@@ -1000,7 +1021,8 @@ const AUFGABEN = [{
   loesung: "7 × 9 = 63, dann 63 − 16 = 47, und 47 + 15 = 62. Pikachu geht mit 62 Volt in die Arena.",
   falle: {
     wert: 47,
-    hinweis: "Bei 47 fehlt die Beere. Der letzte Satz bringt noch 15 Volt dazu."
+    hinweis: "Bei 47 fehlt die Beere. Der letzte Satz bringt noch 15 Volt dazu.",
+    art: "mittendrin"
   }
 }];
 
@@ -1206,16 +1228,18 @@ function HpBalken({
 }
 
 /* Zahlen im Text hervorheben, wenn Blitzlicht aktiv ist */
+/* Achtung: dieser Text steht auf der hellen, cremefarbenen Karte.
+   Also DUNKLE Schrift — helle Toene wie text-slate-100 waeren unlesbar. */
 function StoryText({
   text,
   leuchtet
 }) {
   if (!leuchtet) return /*#__PURE__*/React.createElement("p", {
-    className: "text-lg leading-relaxed text-slate-100"
+    className: "text-lg leading-relaxed text-stone-800"
   }, text);
   const teile = text.split(/(\d+)/);
   return /*#__PURE__*/React.createElement("p", {
-    className: "text-lg leading-relaxed text-slate-100"
+    className: "text-lg leading-relaxed text-stone-800"
   }, teile.map((t, i) => /^\d+$/.test(t) ? /*#__PURE__*/React.createElement("span", {
     key: i,
     className: "rounded bg-yellow-300 px-1 font-black text-slate-900"
@@ -1953,7 +1977,7 @@ function PokemonSchule() {
       stufeNachher,
       hatEntwickelt,
       ersterVersuch: versuche === 0,
-      hatteFalle: !!a.falle
+      falleArt: a.falle ? a.falle.art : null
     });
     setFeedback(null);
     if (tonAn) {
@@ -2140,7 +2164,7 @@ function PokemonSchule() {
       className: "mt-4 flex gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => setView("team"),
-      className: "flex-1 rounded-xl bg-sky-600 py-3 font-bold text-white"
+      className: "flex-1 rounded-xl bg-sky-700 py-3 font-bold text-white"
     }, "\uD83E\uDDE2 Mein Team"), fertig && /*#__PURE__*/React.createElement("button", {
       onClick: () => setView("urkunde"),
       className: "flex-1 rounded-xl bg-amber-500 py-3 font-bold text-slate-900"
@@ -2256,9 +2280,9 @@ function PokemonSchule() {
       className: "mt-1 text-sm text-slate-400"
     }, "Es entwickelt sich zu ", naechsteStufe(runde.pokemon, standVon(a.fuer)).name, ", sobald du sein n\xE4chstes R\xE4tsel l\xF6st.")), /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-lg font-black text-sky-200"
-    }, "\u2B50 +", runde.ep, " Erfahrungspunkte", runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"), runde.ersterVersuch && runde.hatteFalle && /*#__PURE__*/React.createElement("p", {
+    }, "\u2B50 +", runde.ep, " Erfahrungspunkte", runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"), runde.ersterVersuch && LOB_FUER_FALLE[runde.falleArt] && /*#__PURE__*/React.createElement("p", {
       className: "mt-2 rounded-xl border border-orange-400/50 bg-orange-400/10 p-3 text-sm font-bold text-orange-200"
-    }, "\uD83D\uDCD6 Und du bist nicht in die Falle getappt \u2014 in dieser Aufgabe stand eine Zahl, die gar nicht gefragt war. Du hast die Frage ganz gelesen."), /*#__PURE__*/React.createElement("div", {
+    }, "\uD83D\uDCD6 ", LOB_FUER_FALLE[runde.falleArt]), /*#__PURE__*/React.createElement("div", {
       className: "mt-5 flex flex-col gap-2"
     }, naechsteOffen !== -1 ? /*#__PURE__*/React.createElement("button", {
       onClick: () => neueAufgabe(naechsteOffen),
@@ -2327,7 +2351,7 @@ function PokemonSchule() {
   }))), /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-xs font-bold uppercase tracking-widest text-slate-400"
   }, kap.emoji, " ", kap.titel, " \xB7 R\xE4tsel ", a.id), /*#__PURE__*/React.createElement("div", {
-    className: "mt-2 rounded-2xl bg-amber-50 p-5 shadow-xl"
+    className: "mt-2 rounded-2xl bg-amber-50 p-5 text-stone-800 shadow-xl"
   }, /*#__PURE__*/React.createElement(StoryText, {
     text: a.story,
     leuchtet: hilfen.blitzlicht

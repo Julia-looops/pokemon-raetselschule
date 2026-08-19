@@ -6,7 +6,7 @@ const { useState, useEffect, useRef } = React;
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "2.1";
+const VERSION = "2.3";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -186,6 +186,16 @@ function epFuer(hilfen, loesungAufgedeckt) {
   return EP_BASIS + (3 - benutzt) * EP_BONUS;
 }
 
+/* Lob nach dem Loesen — nur fuer die Fallen, bei denen das genaue LESEN
+   den Unterschied macht. Bei "mittendrin" und "rechenart" waere es Wandtapete:
+   das trifft fast jedes Raetsel, und die normale Rueckmeldung lobt schon. */
+const LOB_FUER_FALLE = {
+  zusatzzahl:
+    "In dieser Aufgabe stand eine Zahl, die gar nicht gefragt war — und du hast sie liegen gelassen. Genau hingeschaut!",
+  verlesen:
+    "Hier hätte ein einziges zu schnell gelesenes Wort das Ergebnis verdorben. Du hast genau gelesen.",
+};
+
 const HILFEN = [
   { id: "blitzlicht", emoji: "💡", name: "Blitzlicht", was: "Zahlen leuchten auf" },
   { id: "adlerauge", emoji: "🔍", name: "Adlerauge", was: "Was ist gesucht?" },
@@ -215,7 +225,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt sind nur die Bälle in den REGALEN — nicht alle Bälle im Zimmer.",
     denkhilfe: "6 Regale mit je 7 Bällen: 6 × 7 = ?",
     loesung: "6 × 7 = 42. In den Regalen stehen 42 Pokébälle. Die 5 auf dem Tisch zählen nicht mit.",
-    falle: { wert: 47, hinweis: "Du hast die 5 Bälle vom Tisch mitgezählt. Die Frage will nur die Regale — lies sie nochmal ganz." },
+    falle: { wert: 47, hinweis: "Du hast die 5 Bälle vom Tisch mitgezählt. Die Frage will nur die Regale — lies sie nochmal ganz.", art: "zusatzzahl" },
   },
   {
     id: 2, kap: 1, fuer: "glumanda",
@@ -236,7 +246,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist die Zahl DANACH — also nachdem die 24 weggeflogen sind.",
     denkhilfe: "Zwei Schritte: erst 8 × 9 = ?, dann davon 24 weg.",
     loesung: "8 × 9 = 72, und 72 − 24 = 48. Es sitzen noch 48 Taubsi im Gras.",
-    falle: { wert: 72, hinweis: "72 ist die Zahl VORHER. Der Satz geht noch weiter: 24 fliegen weg." },
+    falle: { wert: 72, hinweis: "72 ist die Zahl VORHER. Der Satz geht noch weiter: 24 fliegen weg.", art: "mittendrin" },
   },
   {
     id: 4, kap: 2, fuer: "raupy",
@@ -247,7 +257,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist die Anzahl an EINEM Baum, nicht an allen zusammen.",
     denkhilfe: "Gleichmäßig verteilen heißt teilen: 48 : 6 = ?",
     loesung: "48 : 6 = 8. An jedem Baum hängen 8 Raupy.",
-    falle: { wert: 42, hinweis: "Du hast 48 − 6 gerechnet. Gleichmäßig aufteilen heißt aber teilen, nicht abziehen." },
+    falle: { wert: 42, hinweis: "Du hast 48 − 6 gerechnet. Gleichmäßig aufteilen heißt aber teilen, nicht abziehen.", art: "rechenart" },
   },
   {
     id: 5, kap: 2, fuer: "bisasam",
@@ -258,7 +268,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist, wie viele AM MORGEN noch wachsen — die gefressenen sind weg.",
     denkhilfe: "Zwei Schritte: erst 7 × 8 = ?, dann davon 15 weg.",
     loesung: "7 × 8 = 56, und 56 − 15 = 41. Am Morgen wachsen noch 41 Samen.",
-    falle: { wert: 56, hinweis: "56 sind alle gepflanzten Samen. Die Nacht kommt aber noch — 15 werden gefressen." },
+    falle: { wert: 56, hinweis: "56 sind alle gepflanzten Samen. Die Nacht kommt aber noch — 15 werden gefressen.", art: "mittendrin" },
   },
   {
     id: 6, kap: 2, fuer: "taubsi",
@@ -269,7 +279,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist EIN Nest — und zwar das, in das noch 7 dazugelegt wurden.",
     denkhilfe: "Zwei Schritte: erst 36 : 4 = ?, dann das Ergebnis + 7.",
     loesung: "36 : 4 = 9, und 9 + 7 = 16. In diesem Nest liegen 16 Beeren.",
-    falle: { wert: 9, hinweis: "9 liegt in jedem Nest. In DIESES Nest kommen aber noch 7 dazu — lies den letzten Satz nochmal." },
+    falle: { wert: 9, hinweis: "9 liegt in jedem Nest. In DIESES Nest kommen aber noch 7 dazu — lies den letzten Satz nochmal.", art: "mittendrin" },
   },
   {
     id: 7, kap: 3, fuer: "menki",
@@ -280,7 +290,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt sind nur die Nüsse in den TÜRMEN. Die 6 einzelnen am Ufer gehören nicht dazu.",
     denkhilfe: "Zwei Schritte: erst 9 × 8 = ?, dann davon 27 weg. Die 6 brauchst du nicht.",
     loesung: "9 × 8 = 72, und 72 − 27 = 45. In den Türmen stecken noch 45 Nüsse.",
-    falle: { wert: 51, hinweis: "Du hast die 6 einzelnen Nüsse dazugezählt. Die haben nie zu einem Turm gehört." },
+    falle: { wert: 51, hinweis: "Du hast die 6 einzelnen Nüsse dazugezählt. Die haben nie zu einem Turm gehört.", art: "zusatzzahl" },
   },
   {
     id: 8, kap: 3, fuer: "schiggy",
@@ -291,7 +301,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist EIN Fass — das, aus dem 4 Liter ausgelaufen sind.",
     denkhilfe: "Zwei Schritte: erst 63 : 7 = ?, dann davon 4 weg.",
     loesung: "63 : 7 = 9, und 9 − 4 = 5. In diesem Fass sind noch 5 Liter.",
-    falle: { wert: 59, hinweis: "Du hast 4 vom ganzen Wasser abgezogen. Erst aufteilen, dann von dem EINEN Fass abziehen." },
+    falle: { wert: 59, hinweis: "Du hast 4 vom ganzen Wasser abgezogen. Erst aufteilen, dann von dem EINEN Fass abziehen.", art: "rechenart" },
   },
   {
     id: 9, kap: 3, fuer: "raupy",
@@ -302,7 +312,7 @@ const AUFGABEN = [
     adlerauge: "Achtung: weggeräumt werden 3 HAUFEN, nicht 3 Steine.",
     denkhilfe: "Drei Schritte: 7 × 9 = ? Dann 3 × 9 = ? Dann das eine minus das andere. Kürzer: es bleiben 4 Haufen übrig.",
     loesung: "7 × 9 = 63 Steine. Weggeräumt: 3 × 9 = 27. Also 63 − 27 = 36 Steine. (Oder gleich: 4 Haufen × 9 = 36.)",
-    falle: { wert: 60, hinweis: "Du hast nur 3 Steine abgezogen. Weggeräumt wurden 3 ganze HAUFEN — jeder mit 9 Steinen." },
+    falle: { wert: 60, hinweis: "Du hast nur 3 Steine abgezogen. Weggeräumt wurden 3 ganze HAUFEN — jeder mit 9 Steinen.", art: "verlesen" },
   },
   {
     id: 10, kap: 4, fuer: "lapras",
@@ -313,7 +323,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist, was AN BORD ist. Was am Strand liegen bleibt, ist nicht an Bord.",
     denkhilfe: "Zwei Schritte: erst 8 × 9 = ?, dann davon 5 weg. Die 20 brauchst du nicht.",
     loesung: "8 × 9 = 72, und 72 − 5 = 67. Lapras hat 67 Muscheln an Bord.",
-    falle: { wert: 87, hinweis: "Du hast die 20 vom Strand dazugezählt. Die sind gerade nicht an Bord." },
+    falle: { wert: 87, hinweis: "Du hast die 20 vom Strand dazugezählt. Die sind gerade nicht an Bord.", art: "zusatzzahl" },
   },
   {
     id: 11, kap: 4, fuer: "schiggy",
@@ -324,7 +334,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist, wie viele Boote HINAUSFAHREN — nicht wie viele im Hafen bleiben.",
     denkhilfe: "Zwei Schritte: erst 40 : 5 = ? (eine Reihe), dann × 3 (drei Reihen).",
     loesung: "40 : 5 = 8 Boote pro Reihe, und 8 × 3 = 24. Es fahren 24 Boote hinaus.",
-    falle: { wert: 8, hinweis: "8 ist EINE Reihe. Hinaus fahren aber 3 Reihen." },
+    falle: { wert: 8, hinweis: "8 ist EINE Reihe. Hinaus fahren aber 3 Reihen.", art: "mittendrin" },
   },
   {
     id: 12, kap: 4, fuer: "vulpix",
@@ -335,7 +345,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt sind die Steine, die MORGENS noch warm sind.",
     denkhilfe: "Zwei Schritte: erst 9 × 7 = ?, dann davon 18 weg.",
     loesung: "9 × 7 = 63, und 63 − 18 = 45. Morgens sind noch 45 Steine warm.",
-    falle: { wert: 63, hinweis: "63 sind alle Steine am Abend. Über Nacht werden 18 davon kalt." },
+    falle: { wert: 63, hinweis: "63 sind alle Steine am Abend. Über Nacht werden 18 davon kalt.", art: "mittendrin" },
   },
   {
     id: 13, kap: 5, fuer: "bisasam",
@@ -346,7 +356,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist die Zahl AM ENDE — erst gehen welche, dann kommen welche.",
     denkhilfe: "Drei Schritte: 9 × 8 = ?, dann davon 25 weg, dann + 12.",
     loesung: "9 × 8 = 72, dann 72 − 25 = 47, und 47 + 12 = 59. Am Ende stehen 59 Personen in der Schlange.",
-    falle: { wert: 47, hinweis: "Bei 47 hast du in der Mitte aufgehört. Der letzte Satz sagt: 12 stellen sich noch an." },
+    falle: { wert: 47, hinweis: "Bei 47 hast du in der Mitte aufgehört. Der letzte Satz sagt: 12 stellen sich noch an.", art: "mittendrin" },
   },
   {
     id: 14, kap: 5, fuer: "glumanda",
@@ -357,7 +367,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt sind die Sprünge an EINEM Tag, nicht alle zusammen.",
     denkhilfe: "Zwei Schritte: erst 9 × 6 = ? (alle Sprünge), dann : 6 (auf sechs Tage).",
     loesung: "9 × 6 = 54 Sprünge, und 54 : 6 = 9. An einem Tag macht Glumanda 9 Sprünge.",
-    falle: { wert: 54, hinweis: "54 sind alle Sprünge zusammen. Sie werden noch auf 6 Tage verteilt." },
+    falle: { wert: 54, hinweis: "54 sind alle Sprünge zusammen. Sie werden noch auf 6 Tage verteilt.", art: "mittendrin" },
   },
   {
     id: 15, kap: 5, fuer: "pikachu",
@@ -368,7 +378,7 @@ const AUFGABEN = [
     adlerauge: "Gefragt ist die Ladung AM ENDE — nach dem Verlust UND nach der Beere.",
     denkhilfe: "Drei Schritte: 7 × 9 = ?, dann davon 16 weg, dann + 15.",
     loesung: "7 × 9 = 63, dann 63 − 16 = 47, und 47 + 15 = 62. Pikachu geht mit 62 Volt in die Arena.",
-    falle: { wert: 47, hinweis: "Bei 47 fehlt die Beere. Der letzte Satz bringt noch 15 Volt dazu." },
+    falle: { wert: 47, hinweis: "Bei 47 fehlt die Beere. Der letzte Satz bringt noch 15 Volt dazu.", art: "mittendrin" },
   },
 ];
 
@@ -531,11 +541,13 @@ function HpBalken({ hp, max, freund }) {
 }
 
 /* Zahlen im Text hervorheben, wenn Blitzlicht aktiv ist */
+/* Achtung: dieser Text steht auf der hellen, cremefarbenen Karte.
+   Also DUNKLE Schrift — helle Toene wie text-slate-100 waeren unlesbar. */
 function StoryText({ text, leuchtet }) {
-  if (!leuchtet) return <p className="text-lg leading-relaxed text-slate-100">{text}</p>;
+  if (!leuchtet) return <p className="text-lg leading-relaxed text-stone-800">{text}</p>;
   const teile = text.split(/(\d+)/);
   return (
-    <p className="text-lg leading-relaxed text-slate-100">
+    <p className="text-lg leading-relaxed text-stone-800">
       {teile.map((t, i) =>
         /^\d+$/.test(t) ? (
           <span key={i} className="rounded bg-yellow-300 px-1 font-black text-slate-900">{t}</span>
@@ -1254,7 +1266,8 @@ function PokemonSchule() {
     if (!geloest.includes(a.id)) setGeloest([...geloest, a.id]);
 
     setRunde({ ep, pokemon, stufeVorher, stufeNachher, hatEntwickelt,
-               ersterVersuch: versuche === 0, hatteFalle: !!a.falle });
+               ersterVersuch: versuche === 0,
+               falleArt: a.falle ? a.falle.art : null });
     setFeedback(null);
     if (tonAn) { Ton.richtig(); if (hatEntwickelt) setTimeout(() => Ton.entwicklung(), 450); }
     setView("belohnung");
@@ -1468,7 +1481,7 @@ function PokemonSchule() {
           </p>
 
           <div className="mt-4 flex gap-2">
-            <button onClick={() => setView("team")} className="flex-1 rounded-xl bg-sky-600 py-3 font-bold text-white">
+            <button onClick={() => setView("team")} className="flex-1 rounded-xl bg-sky-700 py-3 font-bold text-white">
               🧢 Mein Team
             </button>
             {fertig && (
@@ -1602,10 +1615,9 @@ function PokemonSchule() {
               ⭐ +{runde.ep} Erfahrungspunkte
               {runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"}
             </p>
-            {runde.ersterVersuch && runde.hatteFalle && (
+            {runde.ersterVersuch && LOB_FUER_FALLE[runde.falleArt] && (
               <p className="mt-2 rounded-xl border border-orange-400/50 bg-orange-400/10 p-3 text-sm font-bold text-orange-200">
-                📖 Und du bist nicht in die Falle getappt — in dieser Aufgabe stand eine
-                Zahl, die gar nicht gefragt war. Du hast die Frage ganz gelesen.
+                📖 {LOB_FUER_FALLE[runde.falleArt]}
               </p>
             )}
 
@@ -1688,7 +1700,7 @@ function PokemonSchule() {
           {kap.emoji} {kap.titel} · Rätsel {a.id}
         </p>
 
-        <div className="mt-2 rounded-2xl bg-amber-50 p-5 shadow-xl">
+        <div className="mt-2 rounded-2xl bg-amber-50 p-5 text-stone-800 shadow-xl">
           <StoryText text={a.story} leuchtet={hilfen.blitzlicht} />
           <p className="mt-4 text-xl font-black text-stone-900">{a.frage}</p>
           {hilfen.adlerauge && (
