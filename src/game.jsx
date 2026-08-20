@@ -6,7 +6,7 @@ const { useState, useEffect, useRef } = React;
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "2.3";
+const VERSION = "3.0";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -32,20 +32,24 @@ const TYPEN = {
   normal: { name: "Normal", emoji: "⭐", farbe: "bg-stone-400 text-stone-900" },
   gestein: { name: "Gestein", emoji: "🪨", farbe: "bg-amber-700 text-white" },
   gift: { name: "Gift", emoji: "☠️", farbe: "bg-purple-600 text-white" },
+  psycho: { name: "Psycho", emoji: "🔮", farbe: "bg-pink-500 text-white" },
+  boden: { name: "Boden", emoji: "🏜️", farbe: "bg-yellow-700 text-white" },
 };
 
 /* Wer ist gegen wen stark. Nur die Paare, die hier auftreten koennen. */
 const STARK_GEGEN = {
-  wasser: ["feuer", "gestein"],
+  wasser: ["feuer", "gestein", "boden"],
   feuer: ["pflanze", "kaefer", "eis"],
-  pflanze: ["wasser", "gestein"],
+  pflanze: ["wasser", "gestein", "boden"],
   elektro: ["wasser", "flug"],
-  kaefer: ["pflanze"],
+  kaefer: ["pflanze", "psycho"],
   flug: ["kaefer", "kampf", "pflanze"],
   kampf: ["normal", "gestein"],
-  eis: ["flug", "pflanze", "gestein"],
+  eis: ["flug", "pflanze", "gestein", "boden"],
   gestein: ["feuer", "flug", "kaefer"],
   gift: ["pflanze"],
+  psycho: ["kampf", "gift"],
+  boden: ["feuer", "elektro", "gestein"],
   normal: [],
 };
 
@@ -74,6 +78,7 @@ const TEAM = [
       { name: "Bisasam", emoji: "🌱", basis: 7, hp: 34 },
       { name: "Bisaknosp", emoji: "🌿", basis: 11, hp: 42 },
       { name: "Bisaflor", emoji: "🌺", basis: 15, hp: 52 },
+      { name: "Mega-Bisaflor", emoji: "🌺✨", basis: 20, hp: 62 },
     ],
     text: "Die Knospe auf dem Rücken wächst mit jedem Rätsel.",
   },
@@ -83,6 +88,7 @@ const TEAM = [
       { name: "Schiggy", emoji: "💧", basis: 7, hp: 34 },
       { name: "Schillok", emoji: "🌊", basis: 11, hp: 42 },
       { name: "Turtok", emoji: "🐢", basis: 15, hp: 54 },
+      { name: "Mega-Turtok", emoji: "🐢✨", basis: 20, hp: 64 },
     ],
     text: "Wasser löscht Feuer und zerbricht Gestein.",
   },
@@ -92,6 +98,7 @@ const TEAM = [
       { name: "Glumanda", emoji: "🔥", basis: 7, hp: 33 },
       { name: "Glutexo", emoji: "🐲", basis: 11, hp: 41 },
       { name: "Glurak", emoji: "🐉", basis: 16, hp: 52 },
+      { name: "Mega-Glurak", emoji: "🐉✨", basis: 21, hp: 62 },
     ],
     text: "Aus dem kleinen Schwanzflämmchen wird ein Drache.",
   },
@@ -130,6 +137,31 @@ const TEAM = [
     text: "Wird richtig wütend — und dadurch richtig stark.",
   },
   {
+    id: "abra", zeigtGrundform: true, typ: "psycho", attacke: "Konfusion",
+    stufen: [
+      { name: "Abra", emoji: "🥠", basis: 6, hp: 28 },
+      { name: "Kadabra", emoji: "🥄", basis: 11, hp: 40 },
+      { name: "Simsala", emoji: "🔮", basis: 16, hp: 48 },
+    ],
+    text: "Schläft fast immer — und liest trotzdem jeden Gedanken. Stark gegen Kampf und Gift.",
+  },
+  {
+    id: "sandan", zeigtGrundform: true, typ: "boden", attacke: "Schaufler",
+    stufen: [
+      { name: "Sandan", emoji: "🦔", basis: 8, hp: 36 },
+      { name: "Sandamer", emoji: "🪨", basis: 13, hp: 50 },
+    ],
+    text: "Gräbt sich durch jeden Boden. Der beste Gegner für Gestein — also für Onix.",
+  },
+  {
+    id: "enton", zeigtGrundform: true, typ: "wasser", attacke: "Aquawelle",
+    stufen: [
+      { name: "Enton", emoji: "🦆", basis: 8, hp: 36 },
+      { name: "Entoron", emoji: "🦢", basis: 14, hp: 48 },
+    ],
+    text: "Hat immer Kopfweh und weiß nie, warum. Trotzdem eine Wucht im Wasser.",
+  },
+  {
     id: "lapras", typ: "eis", attacke: "Eisstrahl",
     stufen: [{ name: "Lapras", emoji: "🐋", basis: 12, hp: 50 }],
     text: "Selten und sanft. Trägt dich über jedes Meer.",
@@ -148,14 +180,29 @@ TEAM.forEach((p) => { TEAM_NACH_ID[p.id] = p; });
      den Sieg kosten.
    - Die EP geben nur einen kleinen Stärkebonus. Selbstständig loesen lohnt
      sich, ist aber nie Voraussetzung. */
+/* Wie viele geloeste Raetsel entsprechen welcher Stufe?
+
+   Die neun Pokemon der ersten Kapitel erscheinen historisch schon beim ERSTEN
+   geloesten Raetsel in ihrer zweiten Stufe. Das darf sich nicht aendern — sonst
+   wuerde ein bestehendes Team zurueckentwickelt, und das fuehlt sich wie
+   verlorener Fortschritt an.
+
+   Pokemon mit `zeigtGrundform` starten dagegen sichtbar in Stufe 1 und
+   entwickeln sich erst mit dem zweiten Raetsel. Das gibt mehr
+   Entwicklungsmomente — und die sind hier das Beste am Spiel. */
+function stufenIndex(pokemon, stand) {
+  const versatz = pokemon.zeigtGrundform ? 1 : 0;
+  const i = stand.anzahl - versatz;
+  return Math.max(0, Math.min(pokemon.stufen.length - 1, i));
+}
+
 function stufeVon(pokemon, stand) {
-  const i = Math.min(pokemon.stufen.length - 1, stand.anzahl);
-  return pokemon.stufen[i];
+  return pokemon.stufen[stufenIndex(pokemon, stand)];
 }
 
 /* Die naechste Entwicklung, oder null wenn voll entwickelt. */
 function naechsteStufe(pokemon, stand) {
-  const i = Math.min(pokemon.stufen.length - 1, stand.anzahl);
+  const i = stufenIndex(pokemon, stand);
   return i + 1 < pokemon.stufen.length ? pokemon.stufen[i + 1] : null;
 }
 
@@ -213,6 +260,9 @@ const KAPITEL = [
   { id: 3, titel: "Auf dem Weg nach Marmoria", emoji: "🪨" },
   { id: 4, titel: "Die Küste von Azuria", emoji: "🌊" },
   { id: 5, titel: "Kurz vor der Arena", emoji: "🏟️" },
+  { id: 6, titel: "Die Höhle von Fuchsania", emoji: "🔮" },
+  { id: 7, titel: "Der Sandsturm von Orania", emoji: "🏜️" },
+  { id: 8, titel: "Die Liga von Vertania", emoji: "🏆" },
 ];
 
 const AUFGABEN = [
@@ -380,6 +430,171 @@ const AUFGABEN = [
     loesung: "7 × 9 = 63, dann 63 − 16 = 47, und 47 + 15 = 62. Pikachu geht mit 62 Volt in die Arena.",
     falle: { wert: 47, hinweis: "Bei 47 fehlt die Beere. Der letzte Satz bringt noch 15 Volt dazu.", art: "mittendrin" },
   },
+  {
+    id: 16, kap: 6, fuer: "abra",
+    story: "In der Höhle von Fuchsania schweben 8 Kristalle. In jedem Kristall glimmen 9 Funken. Als Abra sich konzentriert, verlöschen 23 Funken.",
+    frage: "Wie viele Funken glimmen danach noch?",
+    antwort: 49, einheit: "Funken",
+    blitzlicht: "Wichtig sind 8 Kristalle, 9 Funken pro Kristall und 23 verloschene.",
+    adlerauge: "Gefragt ist die Zahl DANACH — nach dem Verlöschen.",
+    denkhilfe: "Zwei Schritte: erst 8 × 9 = ?, dann davon 23 weg.",
+    loesung: "8 × 9 = 72, und 72 − 23 = 49. Es glimmen noch 49 Funken.",
+    falle: { wert: 72, hinweis: "72 ist die Zahl davor. Der Satz geht weiter: 23 Funken verlöschen.", art: "mittendrin" },
+  },
+  {
+    id: 17, kap: 6, fuer: "abra",
+    story: "In der Höhle liegen 54 Leuchtsteine, gleichmäßig verteilt auf 6 Nischen. Abra bringt 4 dieser Nischen zum Leuchten.",
+    frage: "Wie viele Steine leuchten jetzt?",
+    antwort: 36, einheit: "Steine",
+    blitzlicht: "Wichtig sind 54 Steine, 6 Nischen und 4 leuchtende Nischen.",
+    adlerauge: "Gefragt sind die Steine in VIER Nischen, nicht in einer.",
+    denkhilfe: "Zwei Schritte: erst 54 : 6 = ? (eine Nische), dann × 4.",
+    loesung: "54 : 6 = 9 Steine pro Nische, und 9 × 4 = 36. Es leuchten 36 Steine.",
+    falle: { wert: 9, hinweis: "9 ist EINE Nische. Abra bringt aber 4 Nischen zum Leuchten.", art: "mittendrin" },
+  },
+  {
+    id: 18, kap: 6, fuer: "bisasam",
+    story: "Bisaflor streckt 7 Ranken in die Höhle, an jeder Ranke sitzen 8 Knospen. In der Dunkelheit verwelken 19 Knospen.",
+    frage: "Wie viele Knospen sind noch frisch?",
+    antwort: 37, einheit: "Knospen",
+    blitzlicht: "Wichtig sind 7 Ranken, 8 Knospen pro Ranke und 19 verwelkte.",
+    adlerauge: "Gefragt sind nur die Knospen, die noch FRISCH sind.",
+    denkhilfe: "Zwei Schritte: erst 7 × 8 = ?, dann davon 19 weg.",
+    loesung: "7 × 8 = 56, und 56 − 19 = 37. Es sind noch 37 Knospen frisch.",
+    falle: { wert: 56, hinweis: "56 sind alle Knospen. 19 davon sind verwelkt.", art: "mittendrin" },
+  },
+  {
+    id: 19, kap: 6, fuer: "abra",
+    story: "Tief in der Höhle stehen 6 Reihen mit je 7 Kristallen. Ein Beben zerbricht 15 davon. Danach wachsen 8 neue Kristalle nach.",
+    frage: "Wie viele Kristalle stehen am Ende?",
+    antwort: 35, einheit: "Kristalle",
+    blitzlicht: "Wichtig sind 6 Reihen, 7 Kristalle pro Reihe, 15 zerbrochene und 8 neue.",
+    adlerauge: "Gefragt ist die Zahl AM ENDE — erst zerbrechen welche, dann wachsen welche nach.",
+    denkhilfe: "Drei Schritte: 6 × 7 = ?, dann davon 15 weg, dann + 8.",
+    loesung: "6 × 7 = 42, dann 42 − 15 = 27, und 27 + 8 = 35. Am Ende stehen 35 Kristalle.",
+    falle: { wert: 27, hinweis: "Bei 27 hast du in der Mitte aufgehört. Danach wachsen noch 8 nach.", art: "mittendrin" },
+  },
+  {
+    id: 20, kap: 6, fuer: "schiggy",
+    story: "Schiggy füllt 72 Liter Wasser gleichmäßig in 8 Becken. Aus einem Becken laufen 5 Liter aus.",
+    frage: "Wie viele Liter sind noch in diesem einen Becken?",
+    antwort: 4, einheit: "Liter",
+    blitzlicht: "Wichtig sind 72 Liter, 8 Becken und 5 ausgelaufene Liter.",
+    adlerauge: "Gefragt ist EIN Becken — das, aus dem etwas ausgelaufen ist.",
+    denkhilfe: "Zwei Schritte: erst 72 : 8 = ?, dann davon 5 weg.",
+    loesung: "72 : 8 = 9, und 9 − 5 = 4. In diesem Becken sind noch 4 Liter.",
+    falle: { wert: 67, hinweis: "Du hast 5 vom ganzen Wasser abgezogen. Erst aufteilen, dann von dem EINEN Becken abziehen.", art: "rechenart" },
+  },
+  {
+    id: 21, kap: 7, fuer: "sandan",
+    story: "Im Sandsturm von Orania liegen 9 Sandhügel. Auf jedem Hügel liegen 8 Muscheln. Der Wind verweht 26 Muscheln.",
+    frage: "Wie viele Muscheln liegen danach noch auf den Hügeln?",
+    antwort: 46, einheit: "Muscheln",
+    blitzlicht: "Wichtig sind 9 Hügel, 8 Muscheln pro Hügel und 26 verwehte.",
+    adlerauge: "Gefragt ist die Zahl DANACH — nachdem der Wind welche verweht hat.",
+    denkhilfe: "Zwei Schritte: erst 9 × 8 = ?, dann davon 26 weg.",
+    loesung: "9 × 8 = 72, und 72 − 26 = 46. Es liegen noch 46 Muscheln auf den Hügeln.",
+    falle: { wert: 72, hinweis: "72 ist die Zahl vor dem Sturm. Die 26 verwehten fehlen noch.", art: "mittendrin" },
+  },
+  {
+    id: 22, kap: 7, fuer: "sandan",
+    story: "In der Wüste stehen 48 Kakteen, gleichmäßig verteilt auf 6 Felder. Sandan pflanzt auf ein einzelnes Feld noch 7 Kakteen dazu.",
+    frage: "Wie viele Kakteen stehen auf diesem einen Feld?",
+    antwort: 15, einheit: "Kakteen",
+    blitzlicht: "Wichtig sind 48 Kakteen, 6 Felder und 7 neue.",
+    adlerauge: "Gefragt ist EIN Feld — und zwar das, auf das noch 7 dazukommen.",
+    denkhilfe: "Zwei Schritte: erst 48 : 6 = ?, dann das Ergebnis + 7.",
+    loesung: "48 : 6 = 8, und 8 + 7 = 15. Auf diesem Feld stehen 15 Kakteen.",
+    falle: { wert: 8, hinweis: "8 stehen auf jedem Feld. Auf DIESES Feld kommen aber noch 7 dazu.", art: "mittendrin" },
+  },
+  {
+    id: 23, kap: 7, fuer: "sandan",
+    story: "Unter der Wüste liegen 8 Höhlen mit je 9 Kristallen. Beim Sandsturm stürzen 3 ganze Höhlen ein.",
+    frage: "Wie viele Kristalle sind danach noch übrig?",
+    antwort: 45, einheit: "Kristalle",
+    blitzlicht: "Wichtig sind 8 Höhlen, 9 Kristalle pro Höhle und 3 eingestürzte Höhlen.",
+    adlerauge: "Achtung: eingestürzt sind 3 HÖHLEN, nicht 3 Kristalle.",
+    denkhilfe: "Drei Schritte: 8 × 9 = ? Dann 3 × 9 = ? Dann das eine minus das andere. Kürzer: es bleiben 5 Höhlen.",
+    loesung: "8 × 9 = 72 Kristalle. Eingestürzt: 3 × 9 = 27. Also 72 − 27 = 45. (Oder gleich: 5 Höhlen × 9 = 45.)",
+    falle: { wert: 69, hinweis: "Du hast nur 3 Kristalle abgezogen. Eingestürzt sind 3 ganze HÖHLEN — jede mit 9 Kristallen.", art: "verlesen" },
+  },
+  {
+    id: 24, kap: 7, fuer: "glumanda",
+    story: "Glutexo trainiert 6 Runden mit je 9 Feuersprüngen. 17 Sprünge misslingen und zählen nicht.",
+    frage: "Wie viele Sprünge sind gelungen?",
+    antwort: 37, einheit: "Sprünge",
+    blitzlicht: "Wichtig sind 6 Runden, 9 Sprünge pro Runde und 17 misslungene.",
+    adlerauge: "Gefragt sind die GELUNGENEN Sprünge.",
+    denkhilfe: "Zwei Schritte: erst 6 × 9 = ?, dann davon 17 weg.",
+    loesung: "6 × 9 = 54, und 54 − 17 = 37. Es sind 37 Sprünge gelungen.",
+    falle: { wert: 54, hinweis: "54 sind alle Sprünge. 17 davon sind misslungen und zählen nicht.", art: "mittendrin" },
+  },
+  {
+    id: 25, kap: 7, fuer: "menki",
+    story: "An 7 Bäumen hängen je 9 Bananen. Rasaff frisst 22 davon auf. Am Boden liegen außerdem 11 alte Bananen, die niemand mehr will.",
+    frage: "Wie viele Bananen hängen noch an den Bäumen?",
+    antwort: 41, einheit: "Bananen",
+    blitzlicht: "Wichtig sind 7 Bäume, 9 Bananen pro Baum und 22 gefressene. Die 11 am Boden stehen auch im Text.",
+    adlerauge: "Gefragt sind nur die Bananen, die noch an den BÄUMEN hängen.",
+    denkhilfe: "Zwei Schritte: erst 7 × 9 = ?, dann davon 22 weg. Die 11 brauchst du nicht.",
+    loesung: "7 × 9 = 63, und 63 − 22 = 41. An den Bäumen hängen noch 41 Bananen.",
+    falle: { wert: 52, hinweis: "Du hast die 11 alten Bananen vom Boden dazugezählt. Die hängen nicht an den Bäumen.", art: "zusatzzahl" },
+  },
+  {
+    id: 26, kap: 8, fuer: "enton",
+    story: "Bei der Liga treten 8 Trainerinnen an, jede mit 7 Pokébällen. Im ersten Kampf werden 24 Bälle verbraucht.",
+    frage: "Wie viele Pokébälle sind noch übrig?",
+    antwort: 32, einheit: "Pokébälle",
+    blitzlicht: "Wichtig sind 8 Trainerinnen, 7 Bälle pro Trainerin und 24 verbrauchte.",
+    adlerauge: "Gefragt ist, wie viele ÜBRIG sind.",
+    denkhilfe: "Zwei Schritte: erst 8 × 7 = ?, dann davon 24 weg.",
+    loesung: "8 × 7 = 56, und 56 − 24 = 32. Es sind noch 32 Pokébälle übrig.",
+    falle: { wert: 56, hinweis: "56 sind alle Bälle am Anfang. 24 wurden schon verbraucht.", art: "mittendrin" },
+  },
+  {
+    id: 27, kap: 8, fuer: "enton",
+    story: "In der Liga-Halle liegen 63 Siegerbänder, gleichmäßig verteilt auf 7 Kisten. Enton holt 5 dieser Kisten.",
+    frage: "Wie viele Bänder hat Enton geholt?",
+    antwort: 45, einheit: "Bänder",
+    blitzlicht: "Wichtig sind 63 Bänder, 7 Kisten und 5 geholte Kisten.",
+    adlerauge: "Gefragt sind die Bänder aus FÜNF Kisten, nicht aus einer.",
+    denkhilfe: "Zwei Schritte: erst 63 : 7 = ? (eine Kiste), dann × 5.",
+    loesung: "63 : 7 = 9 Bänder pro Kiste, und 9 × 5 = 45. Enton hat 45 Bänder geholt.",
+    falle: { wert: 9, hinweis: "9 ist EINE Kiste. Enton holt aber 5 Kisten.", art: "mittendrin" },
+  },
+  {
+    id: 28, kap: 8, fuer: "enton",
+    story: "Im Liga-Saal hängen 9 Ringe mit je 6 Glücksteinen. Beim Jubel fallen 21 Steine heraus. Danach werden 13 neue eingesetzt.",
+    frage: "Wie viele Steine hängen am Ende in den Ringen?",
+    antwort: 46, einheit: "Steine",
+    blitzlicht: "Wichtig sind 9 Ringe, 6 Steine pro Ring, 21 herausgefallene und 13 neue.",
+    adlerauge: "Gefragt ist die Zahl AM ENDE — erst fallen welche heraus, dann kommen welche dazu.",
+    denkhilfe: "Drei Schritte: 9 × 6 = ?, dann davon 21 weg, dann + 13.",
+    loesung: "9 × 6 = 54, dann 54 − 21 = 33, und 33 + 13 = 46. Am Ende hängen 46 Steine in den Ringen.",
+    falle: { wert: 33, hinweis: "Bei 33 hast du in der Mitte aufgehört. Danach werden noch 13 eingesetzt.", art: "mittendrin" },
+  },
+  {
+    id: 29, kap: 8, fuer: "lapras",
+    story: "Lapras verteilt 56 Muscheln gleichmäßig auf 8 Netze. Aus einem Netz fallen 3 Muscheln ins Meer. Am Strand liegen noch 15 weitere Muscheln.",
+    frage: "Wie viele Muscheln sind noch in diesem einen Netz?",
+    antwort: 4, einheit: "Muscheln",
+    blitzlicht: "Wichtig sind 56 Muscheln, 8 Netze und 3, die ins Meer fallen. Die 15 am Strand stehen auch im Text.",
+    adlerauge: "Gefragt ist EIN Netz. Was am Strand liegt, ist in keinem Netz.",
+    denkhilfe: "Zwei Schritte: erst 56 : 8 = ?, dann davon 3 weg. Die 15 brauchst du nicht.",
+    loesung: "56 : 8 = 7, und 7 − 3 = 4. In diesem Netz sind noch 4 Muscheln.",
+    falle: { wert: 19, hinweis: "Du hast die 15 Muscheln vom Strand dazugezählt. Die liegen in keinem Netz.", art: "zusatzzahl" },
+  },
+  {
+    id: 30, kap: 8, fuer: "pikachu",
+    story: "Vor dem letzten Kampf lädt Pikachu 9 Runden mit je 7 Volt. Beim Aufwärmen verliert es 18 Volt. Dann findet es eine Beere, die 12 Volt bringt.",
+    frage: "Mit wie viel Volt geht Pikachu in den letzten Kampf?",
+    antwort: 57, einheit: "Volt",
+    blitzlicht: "Wichtig sind 9 Runden, 7 Volt pro Runde, 18 verlorene und 12 aus der Beere.",
+    adlerauge: "Gefragt ist die Ladung AM ENDE — nach dem Verlust UND nach der Beere.",
+    denkhilfe: "Drei Schritte: 9 × 7 = ?, dann davon 18 weg, dann + 12.",
+    loesung: "9 × 7 = 63, dann 63 − 18 = 45, und 45 + 12 = 57. Pikachu geht mit 57 Volt in den Kampf.",
+    falle: { wert: 45, hinweis: "Bei 45 fehlt die Beere. Der letzte Satz bringt noch 12 Volt.", art: "mittendrin" },
+  },
 ];
 
 /* ------------------------------------------------------------
@@ -388,7 +603,8 @@ const AUFGABEN = [
    Grundschaden pro Zug, `hp` die Lebenspunkte.
    ------------------------------------------------------------ */
 /* Die Arena oeffnet erst in Marmoria (Kapitel 3), also nach den ersten
-   sechs Raetseln. Onix zeigt sich erst, wenn ALLE Raetsel geloest sind —
+   sechs Raetseln. Der Boss (Dragoran) zeigt sich erst, wenn ALLE Raetsel geloest
+   sind —
    damit bis zum Schluss etwas Besonderes wartet.
    Wichtig: die Sperren sind sichtbar und benannt, nie stillschweigend. */
 const ARENA_AB_RAETSEL = 6;
@@ -402,8 +618,10 @@ const GEGNER = [
     spruch: "Machollo spannt alle Muskeln. Das wird ruppig." },
   { name: "Arbok", emoji: "🐍", typ: "gift", hp: 290, schaden: 15,
     spruch: "Arbok richtet sich auf und zischt. Team Rocket lässt grüßen." },
-  { name: "Onix", emoji: "🪨", typ: "gestein", hp: 340, schaden: 17, boss: true,
-    spruch: "Der Boden bebt. ONIX türmt sich vor dir auf — der letzte Gegner." },
+  { name: "Onix", emoji: "🪨", typ: "gestein", hp: 400, schaden: 18,
+    spruch: "Der Boden bebt. ONIX türmt sich vor dir auf." },
+  { name: "Dragoran", emoji: "🐲", typ: "flug", hp: 560, schaden: 23, boss: true,
+    spruch: "Und dann wird es still. Der Champion der Liga schickt DRAGORAN — den letzten Gegner." },
 ];
 
 /* Rechenaufgabe fuer einen Kampfzug.
@@ -641,7 +859,7 @@ function PokemonKarte({ pokemon, stand, klein }) {
 const LADUNG = [1, 0.75, 0.5];          // je nach Versuchen
 const HEILUNG_NACH_SIEG = 20;
 
-function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, onixOffen, geloestAnzahl }) {
+function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, bossOffen, geloestAnzahl }) {
   /* Nur trainierte Pokemon kaempfen mit. Wer noch kein Raetsel geloest hat,
      ist noch nicht im Team — dadurch waechst die Truppe mit dem Fortschritt. */
   const DABEI = TEAM.filter((pp) => imTeam(standVon(pp.id)));
@@ -729,15 +947,15 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
     if (restHp <= 0) {
       if (tonAn) Ton.richtig();
       const warDerLetzte = gegnerIdx + 1 >= GEGNER.length;
-      const naechsterWaereOnix = gegnerIdx + 1 === GEGNER.length - 1;
+      const naechsterWaereBoss = gegnerIdx + 1 === GEGNER.length - 1;
       if (warDerLetzte) {
         if (tonAn) Ton.sieg();
         onGewonnen();
         setPhase("gewonnen");
-      } else if (naechsterWaereOnix && !onixOffen) {
-        /* Onix zeigt sich erst, wenn alle Raetsel geloest sind. Sichtbar erklaert,
+      } else if (naechsterWaereBoss && !bossOffen) {
+        /* Der Boss zeigt sich erst, wenn alle Raetsel geloest sind. Sichtbar erklaert,
            damit klar ist, WAS noch fehlt und warum. */
-        setPhase("onixGesperrt");
+        setPhase("bossGesperrt");
       } else {
         setPhase("gegnerBesiegt");
       }
@@ -837,8 +1055,8 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
             <div className="text-5xl">🏟️</div>
             <h2 className="mt-2 text-3xl font-black text-yellow-300">Die Arena</h2>
             <p className="mt-3 text-slate-200">
-              Fünf Gegner warten. Der letzte ist <b className="text-yellow-300">Onix</b> — und
-              der ist groß.
+              Sechs Gegner warten. Der letzte ist{" "}
+              <b className="text-yellow-300">Dragoran</b>, der Champion der Liga.
             </p>
             <div className="mt-4 space-y-2 rounded-2xl border border-slate-600 bg-slate-900/70 p-4 text-left text-sm text-slate-200">
               <p><b className="text-yellow-300">Rechnen greift an:</b> Löse die Aufgabe, dein Pokémon schlägt zu. Beim ersten Versuch wird der Angriff am stärksten.</p>
@@ -848,7 +1066,7 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
             </div>
             <div className="mt-4 grid grid-cols-3 gap-2">
               {GEGNER.map((g, i) => {
-                const zu = g.boss && !onixOffen;
+                const zu = g.boss && !bossOffen;
                 return (
                   <div
                     key={g.name}
@@ -870,11 +1088,11 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
                 );
               })}
             </div>
-            {!onixOffen && (
+            {!bossOffen && (
               <p className="mt-3 rounded-xl border border-yellow-500/40 bg-yellow-400/10 p-3 text-sm font-bold text-yellow-200">
-                🔒 Onix wartet noch. Er tritt erst an, wenn alle {AUFGABEN.length} Rätsel
-                gelöst sind — du hast {geloestAnzahl}. Bis dahin ist die Arena ein
-                Trainingsplatz: du kannst kämpfen, aber noch nicht gewinnen.
+                🔒 Dragoran wartet noch. Der Champion tritt erst an, wenn alle{" "}
+                {AUFGABEN.length} Rätsel gelöst sind — du hast {geloestAnzahl}. Die anderen
+                fünf kannst du jederzeit herausfordern.
               </p>
             )}
             <button
@@ -897,7 +1115,7 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
           <div className="text-6xl">🏅</div>
           <h2 className="mt-3 text-3xl font-black text-stone-900">Arena geschafft!</h2>
           <p className="mt-4 text-lg text-stone-700">
-            Alle fünf Gegner besiegt — auch Onix. Du hast dir das
+            Alle sechs Gegner besiegt — auch Dragoran, den Champion. Du hast dir das
             <b> Arena-Abzeichen</b> verdient.
           </p>
           <p className="mt-4 text-3xl">⚡ 🏅 🔥</p>
@@ -911,18 +1129,19 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
   }
 
   /* ---------------------------------------------------- ONIX NOCH GESPERRT */
-  if (phase === "onixGesperrt") {
+  if (phase === "bossGesperrt") {
     return (
       <div className={rahmen}>
         <div className="mx-auto max-w-xl">
           <div className="mt-4 rounded-2xl border-2 border-yellow-500/50 bg-slate-800/70 p-6 text-center">
             <div className="text-5xl">🔒</div>
             <h2 className="mt-2 text-2xl font-black text-yellow-300">
-              Vier geschafft — und dann wird es still
+              Fünf geschafft — und dann wird es still
             </h2>
             <p className="mt-3 text-slate-200">
-              Du hast Rattfratz, Zubat, Machollo und Arbok besiegt. Stark! Aber der
-              Boden bleibt ruhig: <b className="text-yellow-300">Onix</b> tritt erst an,
+              Du hast Rattfratz, Zubat, Machollo, Arbok und sogar Onix besiegt. Stark!
+              Aber die Halle bleibt leer:{" "}
+              <b className="text-yellow-300">Dragoran</b>, der Champion, tritt erst an,
               wenn du alle {AUFGABEN.length} Rätsel gelöst hast.
             </p>
             <p className="mt-3 text-lg font-black text-sky-200">
@@ -932,8 +1151,8 @@ function Arena({ standVon, tonAn, setTonAn, onGewonnen, onZurueck, abzeichen, on
                 : `es fehlen noch ${AUFGABEN.length - geloestAnzahl}.`}
             </p>
             <p className="mt-3 text-sm text-slate-300">
-              Jedes gelöste Rätsel macht dein Team stärker. Und Onix hat 340 KP — den
-              schaffst du nur mit einem vollständigen, trainierten Team.
+              Jedes gelöste Rätsel macht dein Team stärker. Und Dragoran hat 560 KP —
+              den schaffst du nur mit einem vollständigen, trainierten Team.
             </p>
             <button
               onClick={onZurueck}
@@ -1299,7 +1518,7 @@ function PokemonSchule() {
           klein ? "py-3 text-base" : "px-6 py-4 text-xl"
         }`}
       >
-        🏟️ {abzeichen ? "Nochmal in die Arena" : fertig ? "In die Arena — Onix wartet!" : "In die Arena!"}
+        🏟️ {abzeichen ? "Nochmal in die Arena" : fertig ? "In die Arena — Dragoran wartet!" : "In die Arena!"}
       </button>
     );
   }
@@ -1477,7 +1696,7 @@ function PokemonSchule() {
           <div className="mt-5"><ArenaKnopf /></div>
           <p className="mt-2 text-center text-xs text-slate-400">
             {entwickelt} von {TEAM.length} Pokémon entwickelt.
-            {arenaOffen && !fertig && " Onix tritt erst an, wenn alle Rätsel gelöst sind."}
+            {arenaOffen && !fertig && " Dragoran tritt erst an, wenn alle Rätsel gelöst sind."}
           </p>
 
           <div className="mt-4 flex gap-2">
@@ -1512,7 +1731,7 @@ function PokemonSchule() {
             <div className="mt-4 rounded-2xl border-2 border-yellow-400 bg-amber-50 p-4 text-center">
               <div className="text-4xl">🏅</div>
               <p className="mt-1 font-black text-stone-900">Arena-Abzeichen</p>
-              <p className="text-xs text-stone-600">Alle fünf Gegner besiegt, auch Onix</p>
+              <p className="text-xs text-stone-600">Alle sechs Gegner besiegt, auch Dragoran</p>
             </div>
           )}
 
@@ -1554,7 +1773,7 @@ function PokemonSchule() {
         tonAn={tonAn}
         setTonAn={setTonAn}
         abzeichen={abzeichen}
-        onixOffen={fertig}
+        bossOffen={fertig || abzeichen}
         geloestAnzahl={geloest.length}
         onGewonnen={() => setAbzeichen(true)}
         onZurueck={() => setView("karte")}
@@ -1661,7 +1880,7 @@ function PokemonSchule() {
           </p>
           {abzeichen && (
             <p className="mt-4 text-lg font-bold text-red-800">
-              🏅 Und in der Arena wurden alle fünf Gegner besiegt, auch Onix.
+              🏅 Und in der Arena wurden alle sechs Gegner besiegt, auch Dragoran.
             </p>
           )}
           <p className="mt-4 text-3xl">⚡ 🏅 🔥</p>

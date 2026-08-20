@@ -1,7 +1,10 @@
 # Florentinas Pokémon-Schule — wie man das Spiel ändert
 
-Kopfrechnen bis 100 für die 3. Klasse. Gelöste Rätsel geben Erfahrungspunkte,
-Pokémon entwickeln sich, und in der Arena kämpft das Team gegen fünf Gegner.
+Kopfrechnen bis 100 für die 3. Klasse. **30 Rätsel in 8 Kapiteln.** Gelöste Rätsel
+lassen Pokémon sich entwickeln, und in der Arena kämpft das Team gegen sechs Gegner.
+
+Das Wichtigste am Spiel sind für das Kind die **Entwicklungen**. Jede Erweiterung
+sollte davon möglichst viele bringen — nicht nur mehr Rechnungen.
 
 Die ausgelieferte `index.html` ist **erzeugt**, nicht handgeschrieben: React,
 Tailwind und der vorkompilierte Spielcode stecken darin, damit die Seite ohne
@@ -52,8 +55,8 @@ Die Reihenfolge in `src/game.jsx`:
 2. **Team** (`TEAM`) — neun Pokémon, je mit `stufen` von schwach nach stark.
 3. **EP-Regeln** — `EP_BASIS` 6 pro Rätsel, `EP_BONUS` 2 je nicht gebrauchter
    Hilfe, also höchstens 12.
-4. **Kapitel und Rätsel** (`KAPITEL`, `AUFGABEN`) — 15 Rätsel. `fuer` sagt, welches
-   Pokémon trainiert wird, `falle` ist die Lese-Falle (siehe unten).
+4. **Kapitel und Rätsel** (`KAPITEL`, `AUFGABEN`) — 30 Rätsel in 8 Kapiteln. `fuer`
+   sagt, welches Pokémon trainiert wird, `falle` ist die Lese-Falle (siehe unten).
 5. **Arena** (`ARENA_AB_RAETSEL`, `GEGNER`, Komponente `Arena`).
 6. **Ansichten** (Komponente `PokemonSchule`).
 
@@ -63,7 +66,7 @@ Das ist der Kern. Sie sind bewusst getrennt — nicht zusammenlegen:
 
 1. **Ein Pokémon kommt erst ins Team, wenn eines seiner Rätsel gelöst ist.**
    `imTeam(stand)` prüft das. Dadurch wächst die Truppe mit dem Fortschritt: nach
-   6 Rätseln kämpfen 5 von 9, nach allen 15 sind alle dabei. Das ist der
+   6 Rätseln kämpfen 5 von 12, nach allen 30 sind alle dabei. Das ist der
    wichtigste Schwierigkeitsregler.
 2. **Die Entwicklung hängt allein an der ANZAHL gelöster Rätsel**, nicht an den EP
    (`stufeVon(pokemon, stand)` nutzt `stand.anzahl`). Wer viele Hilfen braucht,
@@ -74,10 +77,23 @@ Das ist der Kern. Sie sind bewusst getrennt — nicht zusammenlegen:
 Deshalb wird überall `standVon(id)` übergeben — `{ anzahl, ep }` gebündelt, damit
 die beiden nicht vertauscht werden können.
 
+### Der Stufen-Versatz — bitte nicht „aufräumen"
+
+`stufenIndex()` rechnet `anzahl − versatz`. Die neun Pokémon der ersten fünf
+Kapitel haben **keinen** Versatz: sie erscheinen schon beim ersten gelösten Rätsel
+in ihrer zweiten Stufe. Das ist historisch so und **muss so bleiben** — sonst würde
+ein bestehendes Team beim Update zurückentwickelt, und verlorener Fortschritt ist
+das Schlimmste, was passieren kann.
+
+Neue Pokémon bekommen `zeigtGrundform: true` und starten sichtbar in Stufe 1. Sie
+zeigen dadurch eine Entwicklung mehr. **Neu hinzugefügte Pokémon immer so anlegen.**
+
 ## Die zwei Sperren
 
 - **Arena** öffnet ab `ARENA_AB_RAETSEL` (6) gelösten Rätseln, also in Marmoria.
-- **Onix** tritt erst an, wenn ALLE Rätsel gelöst sind (`onixOffen`).
+- **Der Boss** (letzter Gegner, derzeit Dragoran) tritt erst an, wenn ALLE Rätsel
+  gelöst sind (`bossOffen`, das ist `fertig || abzeichen` — einmal verdient bleibt
+  er offen).
 
 Beide Sperren sind **sichtbar und benannt**: der Arena-Knopf zeigt, wie viele
 Rätsel noch fehlen; die Gegnerliste zeigt Onix mit Schloss; nach dem vierten Sieg
@@ -86,7 +102,7 @@ im Vorgängerspiel war eine unsichtbare Schwelle der schlimmste Fehler.
 
 ## Rechenarten
 
-Die 15 Rätsel: 12× malnehmen, 10× minus, 5× teilen, 3× plus — meist kombiniert
+Die 30 Rätsel: 25× malnehmen, 22× minus, 10× teilen, 7× plus — meist kombiniert
 über zwei bis drei Schritte. Malnehmen und Teilen bleiben im **kleinen 1×1**
 (Faktoren bis 9, Divisionen gehen glatt auf).
 
@@ -139,23 +155,29 @@ verpasste Übung.
 
 ## Balance der Arena
 
-Gegner: 80 / 115 / 200 / 290 / 340 KP bei 5 / 8 / 12 / 15 / 17 Schaden, nach jedem
-Sieg heilt das Team 20 KP. Typ-Vorteil verdoppelt den Schaden, Abwehr halbiert ihn.
+Sechs Gegner: 80 / 115 / 200 / 290 / 400 / 560 KP bei 5 / 8 / 12 / 15 / 18 / 23
+Schaden, nach jedem Sieg heilt das Team 20 KP. Typ-Vorteil verdoppelt den Schaden,
+Abwehr halbiert ihn.
 
-Simuliert (400 Durchläufe je Fall, `scratchpad/wall-sim.mjs`):
+Simuliert mit `scratchpad/sim3.mjs` (400 Durchläufe je Fall). **Dieses Skript liest
+TEAM, GEGNER und die Rätsel-Zuordnung direkt aus `src/game.jsx`** — es kann also
+nicht von der Wirklichkeit abweichen. Nach jeder Änderung an Kampfwerten,
+Pokémon-Werten oder der Rätsel-Zuordnung neu laufen lassen.
 
 | Fortschritt | klug gespielt | unaufmerksam |
 |---|---|---|
 | 6 Rätsel (Marmoria) | 0 %, Wand bei Arbok | 0 % |
-| 9 Rätsel | 99 %, 35 Züge | 22 % |
-| 12 Rätsel | 100 %, 32 Züge | 100 % |
-| alle 15, ohne Hilfe | 100 %, 41 Züge | 85 % |
-| alle 15, viel Hilfe | 100 %, 45 Züge | 46 % |
+| 15 Rätsel (5 Gegner) | 100 %, 43 Züge | 69 % |
+| alle 30, ohne Hilfe | 100 %, 49 Züge | 57 % |
+| alle 30, viel Hilfe | 99 %, 61 Züge | 2 % |
 
-Zwei Bedingungen müssen erhalten bleiben, wenn man an den Zahlen dreht:
+Drei Bedingungen müssen erhalten bleiben, wenn man an den Zahlen dreht:
 
 - **In Marmoria darf sie nicht durchkommen** — der Ansporn ist, alle Rätsel zu lösen.
-- **Mit allen 15 Rätseln muss sie gewinnen, egal wie viele Hilfen sie gebraucht hat.**
+- **Mit allen Rätseln muss sie gewinnen, egal wie viele Hilfen sie gebraucht hat.**
+- **Mehr Fortschritt darf das Finale nicht KÜRZER machen.** Das ist zweimal
+  passiert: ein Mega-Team räumte die alte Arena in 27 Zügen ab, weniger als mit
+  halbem Fortschritt. Deshalb wächst die Arena mit (neuer Gegner am Ende).
 
 Verlieren kostet keinen Fortschritt: es geht beim gleichen Gegner mit geheiltem
 Team weiter.
