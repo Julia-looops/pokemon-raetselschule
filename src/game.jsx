@@ -6,7 +6,7 @@ const { useState, useEffect, useRef } = React;
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "3.0";
+const VERSION = "3.1";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -454,14 +454,14 @@ const AUFGABEN = [
   },
   {
     id: 18, kap: 6, fuer: "bisasam",
-    story: "Bisaflor streckt 7 Ranken in die Höhle, an jeder Ranke sitzen 8 Knospen. In der Dunkelheit verwelken 19 Knospen.",
-    frage: "Wie viele Knospen sind noch frisch?",
-    antwort: 37, einheit: "Knospen",
-    blitzlicht: "Wichtig sind 7 Ranken, 8 Knospen pro Ranke und 19 verwelkte.",
-    adlerauge: "Gefragt sind nur die Knospen, die noch FRISCH sind.",
-    denkhilfe: "Zwei Schritte: erst 7 × 8 = ?, dann davon 19 weg.",
-    loesung: "7 × 8 = 56, und 56 − 19 = 37. Es sind noch 37 Knospen frisch.",
-    falle: { wert: 56, hinweis: "56 sind alle Knospen. 19 davon sind verwelkt.", art: "mittendrin" },
+    story: "Bisaflor streckt 7 Ranken in die Höhle, an jeder Ranke sitzen 8 Knospen. Im Licht der Kristalle öffnen sich noch 13 weitere Knospen.",
+    frage: "Wie viele Knospen sind es jetzt insgesamt?",
+    antwort: 69, einheit: "Knospen",
+    blitzlicht: "Wichtig sind 7 Ranken, 8 Knospen pro Ranke und 13 neue.",
+    adlerauge: "Gefragt ist die Zahl INSGESAMT, also alles zusammen.",
+    denkhilfe: "Zwei Schritte: erst 7 × 8 = ?, dann das Ergebnis + 13.",
+    loesung: "7 × 8 = 56, und 56 + 13 = 69. Es sind 69 Knospen.",
+    falle: { wert: 56, hinweis: "56 sind die Knospen an den Ranken. Der letzte Satz bringt 13 dazu.", art: "mittendrin" },
   },
   {
     id: 19, kap: 6, fuer: "abra",
@@ -487,14 +487,14 @@ const AUFGABEN = [
   },
   {
     id: 21, kap: 7, fuer: "sandan",
-    story: "Im Sandsturm von Orania liegen 9 Sandhügel. Auf jedem Hügel liegen 8 Muscheln. Der Wind verweht 26 Muscheln.",
-    frage: "Wie viele Muscheln liegen danach noch auf den Hügeln?",
-    antwort: 46, einheit: "Muscheln",
-    blitzlicht: "Wichtig sind 9 Hügel, 8 Muscheln pro Hügel und 26 verwehte.",
-    adlerauge: "Gefragt ist die Zahl DANACH — nachdem der Wind welche verweht hat.",
-    denkhilfe: "Zwei Schritte: erst 9 × 8 = ?, dann davon 26 weg.",
-    loesung: "9 × 8 = 72, und 72 − 26 = 46. Es liegen noch 46 Muscheln auf den Hügeln.",
-    falle: { wert: 72, hinweis: "72 ist die Zahl vor dem Sturm. Die 26 verwehten fehlen noch.", art: "mittendrin" },
+    story: "Am Hügel von Orania liegen 38 Muscheln. Der Wind trägt 24 weitere herbei — und verweht dann 26 davon.",
+    frage: "Wie viele Muscheln liegen am Ende am Hügel?",
+    antwort: 36, einheit: "Muscheln",
+    blitzlicht: "Wichtig sind 38, 24 und 26.",
+    adlerauge: "Gefragt ist die Zahl AM ENDE. Erst kommen welche dazu, dann verwehen welche.",
+    denkhilfe: "Zwei Schritte: erst 38 + 24 = ?, dann davon 26 weg.",
+    loesung: "38 + 24 = 62, und 62 − 26 = 36. Am Hügel liegen 36 Muscheln.",
+    falle: { wert: 62, hinweis: "Bei 62 hast du in der Mitte aufgehört. Danach verweht der Wind noch 26.", art: "mittendrin" },
   },
   {
     id: 22, kap: 7, fuer: "sandan",
@@ -520,14 +520,14 @@ const AUFGABEN = [
   },
   {
     id: 24, kap: 7, fuer: "glumanda",
-    story: "Glutexo trainiert 6 Runden mit je 9 Feuersprüngen. 17 Sprünge misslingen und zählen nicht.",
-    frage: "Wie viele Sprünge sind gelungen?",
-    antwort: 37, einheit: "Sprünge",
-    blitzlicht: "Wichtig sind 6 Runden, 9 Sprünge pro Runde und 17 misslungene.",
-    adlerauge: "Gefragt sind die GELUNGENEN Sprünge.",
-    denkhilfe: "Zwei Schritte: erst 6 × 9 = ?, dann davon 17 weg.",
-    loesung: "6 × 9 = 54, und 54 − 17 = 37. Es sind 37 Sprünge gelungen.",
-    falle: { wert: 54, hinweis: "54 sind alle Sprünge. 17 davon sind misslungen und zählen nicht.", art: "mittendrin" },
+    story: "Glutexo trainiert an 9 Feuerringen. 3 Ringe sind kaputt und fallen aus. Durch jeden Ring, der noch heil ist, springt es 8 Mal.",
+    frage: "Wie viele Sprünge macht Glutexo insgesamt?",
+    antwort: 48, einheit: "Sprünge",
+    blitzlicht: "Wichtig sind 9 Ringe, 3 kaputte und 8 Sprünge pro heilem Ring.",
+    adlerauge: "Gesprungen wird nur durch die HEILEN Ringe. Wie viele sind das?",
+    denkhilfe: "Zwei Schritte: erst 9 − 3 = ? (heile Ringe), dann × 8.",
+    loesung: "9 − 3 = 6 heile Ringe, und 6 × 8 = 48. Glutexo macht 48 Sprünge.",
+    falle: { wert: 69, hinweis: "Du hast alle 9 Ringe gerechnet und dann 3 abgezogen. Kaputt sind 3 RINGE — durch die wird gar nicht gesprungen.", art: "verlesen" },
   },
   {
     id: 25, kap: 7, fuer: "menki",
@@ -542,14 +542,14 @@ const AUFGABEN = [
   },
   {
     id: 26, kap: 8, fuer: "enton",
-    story: "Bei der Liga treten 8 Trainerinnen an, jede mit 7 Pokébällen. Im ersten Kampf werden 24 Bälle verbraucht.",
-    frage: "Wie viele Pokébälle sind noch übrig?",
-    antwort: 32, einheit: "Pokébälle",
-    blitzlicht: "Wichtig sind 8 Trainerinnen, 7 Bälle pro Trainerin und 24 verbrauchte.",
-    adlerauge: "Gefragt ist, wie viele ÜBRIG sind.",
-    denkhilfe: "Zwei Schritte: erst 8 × 7 = ?, dann davon 24 weg.",
-    loesung: "8 × 7 = 56, und 56 − 24 = 32. Es sind noch 32 Pokébälle übrig.",
-    falle: { wert: 56, hinweis: "56 sind alle Bälle am Anfang. 24 wurden schon verbraucht.", art: "mittendrin" },
+    story: "Bei der Liga stehen 5 Trainerinnen am Start. Kurz vor dem Kampf kommen 3 weitere dazu. Jede von ihnen hat 8 Pokébälle dabei.",
+    frage: "Wie viele Pokébälle sind insgesamt dabei?",
+    antwort: 64, einheit: "Pokébälle",
+    blitzlicht: "Wichtig sind 5 Trainerinnen, 3 die dazukommen und 8 Bälle pro Person.",
+    adlerauge: "Jede hat 8 Bälle — also musst du zuerst wissen, wie viele es überhaupt sind.",
+    denkhilfe: "Zwei Schritte: erst 5 + 3 = ? (alle Trainerinnen), dann × 8.",
+    loesung: "5 + 3 = 8 Trainerinnen, und 8 × 8 = 64. Es sind 64 Pokébälle dabei.",
+    falle: { wert: 40, hinweis: "Du hast nur die 5 gerechnet, die schon da waren. 3 kommen noch dazu.", art: "mittendrin" },
   },
   {
     id: 27, kap: 8, fuer: "enton",
@@ -564,14 +564,14 @@ const AUFGABEN = [
   },
   {
     id: 28, kap: 8, fuer: "enton",
-    story: "Im Liga-Saal hängen 9 Ringe mit je 6 Glücksteinen. Beim Jubel fallen 21 Steine heraus. Danach werden 13 neue eingesetzt.",
-    frage: "Wie viele Steine hängen am Ende in den Ringen?",
-    antwort: 46, einheit: "Steine",
-    blitzlicht: "Wichtig sind 9 Ringe, 6 Steine pro Ring, 21 herausgefallene und 13 neue.",
-    adlerauge: "Gefragt ist die Zahl AM ENDE — erst fallen welche heraus, dann kommen welche dazu.",
-    denkhilfe: "Drei Schritte: 9 × 6 = ?, dann davon 21 weg, dann + 13.",
-    loesung: "9 × 6 = 54, dann 54 − 21 = 33, und 33 + 13 = 46. Am Ende hängen 46 Steine in den Ringen.",
-    falle: { wert: 33, hinweis: "Bei 33 hast du in der Mitte aufgehört. Danach werden noch 13 eingesetzt.", art: "mittendrin" },
+    story: "Im Liga-Saal liegen 64 Glücksteine. 16 davon sind zerbrochen und werden weggeräumt. Der Rest wird gleichmäßig auf 6 Kisten verteilt.",
+    frage: "Wie viele Steine liegen in einer Kiste?",
+    antwort: 8, einheit: "Steine",
+    blitzlicht: "Wichtig sind 64 Steine, 16 zerbrochene und 6 Kisten.",
+    adlerauge: "Gefragt ist EINE Kiste. Und zerbrochene Steine kommen in keine Kiste.",
+    denkhilfe: "Zwei Schritte: erst 64 − 16 = ?, dann : 6.",
+    loesung: "64 − 16 = 48, und 48 : 6 = 8. In jeder Kiste liegen 8 Steine.",
+    falle: { wert: 48, hinweis: "48 sind alle heilen Steine zusammen. Sie werden noch auf 6 Kisten verteilt.", art: "mittendrin" },
   },
   {
     id: 29, kap: 8, fuer: "lapras",

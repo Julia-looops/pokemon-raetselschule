@@ -109,6 +109,25 @@ Die 30 Rätsel: 25× malnehmen, 22× minus, 10× teilen, 7× plus — meist komb
 Die Kampfaufgaben (`kampfRechnung`) mischen 40 % mal, 25 % minus, 20 % teilen,
 15 % plus. Alle Ergebnisse bleiben zwischen 2 und 100.
 
+## Abwechslung der Rechenwege — bitte messen
+
+Julias wichtigster Punkt: das Kind soll **kein Muster erkennen**. Sobald ein
+Rechenweg dominiert, hört sie auf zu lesen und rechnet blind nach Schema.
+
+Nach jeder Erweiterung nachzählen, welche Abfolgen von Rechenschritten vorkommen
+(aus den `loesung`-Texten). Stand Version 3.1: **15 verschiedene Rechenwege** bei
+30 Rätseln, häufigstes Muster `×−` mit 7 (23 %), und **kein Muster folgt direkt
+auf sich selbst**.
+
+Zwei Richtwerte:
+
+- Kein Muster über etwa 25 %. In Version 3.0 lag `×−` bei 37 % — zu schief,
+  deshalb wurden fünf Rätsel auf `×+`, `+−`, `−×`, `+×` und `−:` umgebaut.
+- Zwei gleiche Wege nie direkt hintereinander.
+
+Vorhandene Wege: `×`, `−`, `:`, `×−`, `×+`, `×:`, `+−`, `−×`, `+×`, `−:`, `:−`,
+`:+`, `:×`, `××−`, `×−+`. Beim Ergänzen bevorzugt die seltenen nehmen.
+
 ## Lese-Fallen
 
 Das genaue Fertiglesen der Frage ist das eigentliche Übungsziel. Deshalb hat fast
