@@ -413,7 +413,7 @@ const {
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "4.0";
+const VERSION = "4.1";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -422,6 +422,11 @@ function genitiv(name) {
   return /[sxzß]$/i.test(name) ? name + "\u2019" : name + "s";
 }
 const SPEICHER_KEY = "florentina-pokemon";
+
+/* Regelstand des Spielstands. Ab 4 zaehlt ein nachgeschauter Loesungsweg nicht
+   mehr fuer die Entwicklung. Aeltere Spielstaende werden beim Laden einmalig
+   markiert (`gnade`), damit schon erreichte Entwicklungen NICHT verloren gehen. */
+const REGEL_STAND = 4;
 
 /* ------------------------------------------------------------
    TYPEN
@@ -2494,7 +2499,16 @@ function PokemonSchule() {
   }
   /* Wie viele Raetsel dieses Pokemon sind geloest? Davon haengt die Entwicklung ab. */
   function anzahlVon(pokemonId) {
-    return AUFGABEN.filter(x => x.fuer === pokemonId && geloest.includes(x.id)).length;
+    return AUFGABEN.filter(x => {
+      if (x.fuer !== pokemonId || !geloest.includes(x.id)) return false;
+      const e = ergebnisse[x.id];
+      /* Wer den Loesungsweg angesehen und die Zahl abgeschrieben hat, hat das
+         Raetsel nicht geloest — das zaehlt nicht fuer die Entwicklung.
+         `gnade` sind Altfaelle von vor dem Regelstand 4: bereits erreichte
+         Entwicklungen werden nicht rueckwirkend weggenommen. */
+      if (e && e.loesung && !e.gnade) return false;
+      return true;
+    }).length;
   }
   /* Beides gebuendelt — so wird an den Anzeigestellen nichts vertauscht. */
   function standVon(pokemonId) {
@@ -2515,7 +2529,15 @@ function PokemonSchule() {
         if (r && r.value) {
           const d = JSON.parse(r.value);
           setGeloest(d.geloest || []);
-          setErgebnisse(d.ergebnisse || {});
+          let erg = d.ergebnisse || {};
+          if ((d.regelStand || 0) < REGEL_STAND) {
+            /* Einmalige Nachsicht: was vor dieser Regel erreicht wurde, bleibt. */
+            erg = Object.fromEntries(Object.entries(erg).map(([k, e]) => e && e.loesung ? [k, {
+              ...e,
+              gnade: true
+            }] : [k, e]));
+          }
+          setErgebnisse(erg);
           setMut(d.mut || 0);
           setAbzeichen(d.abzeichen || false);
           /* Spielstaende von vor der Namenseingabe gehoeren Florentina — sie soll
@@ -2537,7 +2559,8 @@ function PokemonSchule() {
           ergebnisse,
           mut,
           abzeichen,
-          name
+          name,
+          regelStand: REGEL_STAND
         }));
       } catch (e) {
         /* kein Speicher — Spiel laeuft trotzdem */
@@ -2619,19 +2642,27 @@ function PokemonSchule() {
     const standVorher = standVon(a.fuer);
     const schonGeloest = geloest.includes(a.id);
     const standNachher = {
-      anzahl: standVorher.anzahl + (schonGeloest ? 0 : 1),
+      anzahl: standVorher.anzahl + (schonGeloest || zeigLoesung ? 0 : 1),
       ep: standVorher.ep + ep
     };
     const stufeVorher = stufeVon(pokemon, standVorher);
     const stufeNachher = stufeVon(pokemon, standNachher);
     const hatEntwickelt = stufeVorher.name !== stufeNachher.name;
-    setErgebnisse({
+
+    /* Ein neues Ergebnis ersetzt das alte nur, wenn es nicht schlechter ist.
+       Sonst wuerde ein spaeterer Blick auf den Loesungsweg ein sauber geloestes
+       Raetsel entwerten — und das Pokemon zurueckentwickeln. */
+    const bisher = ergebnisse[a.id];
+    const neuerEintrag = {
+      ep,
+      ...hilfen,
+      loesung: zeigLoesung
+    };
+    const rang = e => e && e.loesung && !e.gnade ? 0 : 1;
+    const nimmNeu = !bisher || rang(neuerEintrag) > rang(bisher) || rang(neuerEintrag) === rang(bisher) && ep >= bisher.ep;
+    if (nimmNeu) setErgebnisse({
       ...ergebnisse,
-      [a.id]: {
-        ep,
-        ...hilfen,
-        loesung: zeigLoesung
-      }
+      [a.id]: neuerEintrag
     });
     if (!geloest.includes(a.id)) setGeloest([...geloest, a.id]);
     setRunde({
@@ -2641,6 +2672,7 @@ function PokemonSchule() {
       stufeNachher,
       hatEntwickelt,
       ersterVersuch: versuche === 0,
+      nachgeschaut: zeigLoesung,
       falleArt: a.falle ? a.falle.art : null
     });
     setFeedback(null);
@@ -2809,6 +2841,10 @@ function PokemonSchule() {
         const gesperrt = i > offenIdx && offenIdx !== -1;
         const p = TEAM_NACH_ID[x.fuer];
         const stufe = stufeVon(p, standVon(x.fuer));
+        /* Nachgeschaute Raetsel sichtbar machen, damit sie sie wiederfindet
+           und selbst loest — dann zaehlen sie fuer die Entwicklung. */
+        const erg = ergebnisse[x.id];
+        const nachgeschaut = ok && erg && erg.loesung && !erg.gnade;
         return /*#__PURE__*/React.createElement("button", {
           key: x.id,
           disabled: gesperrt,
@@ -2816,9 +2852,9 @@ function PokemonSchule() {
           className: `flex h-20 flex-1 flex-col items-center justify-center rounded-xl font-black transition ${ok ? "bg-yellow-400 text-slate-900 active:translate-y-0.5" : gesperrt ? "bg-slate-800 text-slate-600" : "bg-red-600 text-white active:translate-y-0.5"}`
         }, /*#__PURE__*/React.createElement("span", {
           className: "text-2xl"
-        }, gesperrt ? "🔒" : stufe.emoji), /*#__PURE__*/React.createElement("span", {
+        }, gesperrt ? "🔒" : nachgeschaut ? "📖" : stufe.emoji), /*#__PURE__*/React.createElement("span", {
           className: "text-[11px]"
-        }, ok ? (ergebnisse[x.id] ? ergebnisse[x.id].ep : 0) + " EP" : gesperrt ? "" : "Rätsel"));
+        }, nachgeschaut ? "nachgeschaut" : ok ? (erg ? erg.ep : 0) + " EP" : gesperrt ? "" : "Rätsel"));
       })));
     }), /*#__PURE__*/React.createElement("div", {
       className: "mt-5"
@@ -2942,7 +2978,13 @@ function PokemonSchule() {
       className: "mt-1 font-bold text-slate-100"
     }, stufeVon(runde.pokemon, standVon(a.fuer)).name, " bekommt ", runde.ep, " EP"), naechsteStufe(runde.pokemon, standVon(a.fuer)) && /*#__PURE__*/React.createElement("p", {
       className: "mt-1 text-sm text-slate-400"
-    }, "Es entwickelt sich zu ", naechsteStufe(runde.pokemon, standVon(a.fuer)).name, ", sobald du sein n\xE4chstes R\xE4tsel l\xF6st.")), /*#__PURE__*/React.createElement("p", {
+    }, "Es entwickelt sich zu ", naechsteStufe(runde.pokemon, standVon(a.fuer)).name, ", sobald du sein n\xE4chstes R\xE4tsel l\xF6st.")), runde.nachgeschaut ? /*#__PURE__*/React.createElement("div", {
+      className: "mt-4 rounded-xl border-2 border-slate-500 bg-slate-900/70 p-4 text-left"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-base font-black text-slate-100"
+    }, "\uD83D\uDCD6 Du hast den L\xF6sungsweg angesehen."), /*#__PURE__*/React.createElement("p", {
+      className: "mt-2 text-sm text-slate-300"
+    }, "Das ist v\xF6llig in Ordnung \u2014 manchmal ist Nachschauen genau richtig. F\xFCr die ", /*#__PURE__*/React.createElement("b", null, "Entwicklung"), " z\xE4hlt dieses R\xE4tsel aber nicht, und es gibt keine EP. Tippe es sp\xE4ter auf der Reise-Karte nochmal an (dort steht dann \uD83D\uDCD6) und l\xF6se es selbst \u2014 dann z\xE4hlt es.")) : /*#__PURE__*/React.createElement("p", {
       className: "mt-4 text-lg font-black text-sky-200"
     }, "\u2B50 +", runde.ep, " Erfahrungspunkte", runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"), runde.ersterVersuch && LOB_FUER_FALLE[runde.falleArt] && /*#__PURE__*/React.createElement("p", {
       className: "mt-2 rounded-xl border border-orange-400/50 bg-orange-400/10 p-3 text-sm font-bold text-orange-200"
@@ -3080,8 +3122,12 @@ function PokemonSchule() {
     klein: true
   }))), !zeigLoesung && /*#__PURE__*/React.createElement("button", {
     onClick: () => setZeigLoesung(true),
-    className: "mt-3 w-full rounded-xl border border-slate-600 py-2 text-sm text-slate-400"
-  }, "Ich will den ganzen Weg sehen (das ist erlaubt)")));
+    className: "mt-3 w-full rounded-xl border border-slate-600 px-3 py-3 text-slate-400"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-bold"
+  }, "L\xF6sungsweg anzeigen"), /*#__PURE__*/React.createElement("span", {
+    className: "mt-1 block text-[11px] leading-snug"
+  }, "Das ist erlaubt. Aber dann z\xE4hlt dieses R\xE4tsel nicht f\xFCr die Entwicklung \u2014", " ", stufeDerAufgabe.name, " bekommt keine EP. Du kannst es sp\xE4ter nochmal ohne L\xF6sungsweg probieren."))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(PokemonSchule, null));
 </script>

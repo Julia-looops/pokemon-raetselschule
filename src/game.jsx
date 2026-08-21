@@ -6,7 +6,7 @@ const { useState, useEffect, useRef } = React;
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "4.0";
+const VERSION = "4.1";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -15,6 +15,11 @@ function genitiv(name) {
   return /[sxzß]$/i.test(name) ? name + "\u2019" : name + "s";
 }
 const SPEICHER_KEY = "florentina-pokemon";
+
+/* Regelstand des Spielstands. Ab 4 zaehlt ein nachgeschauter Loesungsweg nicht
+   mehr fuer die Entwicklung. Aeltere Spielstaende werden beim Laden einmalig
+   markiert (`gnade`), damit schon erreichte Entwicklungen NICHT verloren gehen. */
+const REGEL_STAND = 4;
 
 /* ------------------------------------------------------------
    TYPEN
@@ -1556,7 +1561,16 @@ function PokemonSchule() {
   }
   /* Wie viele Raetsel dieses Pokemon sind geloest? Davon haengt die Entwicklung ab. */
   function anzahlVon(pokemonId) {
-    return AUFGABEN.filter((x) => x.fuer === pokemonId && geloest.includes(x.id)).length;
+    return AUFGABEN.filter((x) => {
+      if (x.fuer !== pokemonId || !geloest.includes(x.id)) return false;
+      const e = ergebnisse[x.id];
+      /* Wer den Loesungsweg angesehen und die Zahl abgeschrieben hat, hat das
+         Raetsel nicht geloest — das zaehlt nicht fuer die Entwicklung.
+         `gnade` sind Altfaelle von vor dem Regelstand 4: bereits erreichte
+         Entwicklungen werden nicht rueckwirkend weggenommen. */
+      if (e && e.loesung && !e.gnade) return false;
+      return true;
+    }).length;
   }
   /* Beides gebuendelt — so wird an den Anzeigestellen nichts vertauscht. */
   function standVon(pokemonId) {
@@ -1575,7 +1589,16 @@ function PokemonSchule() {
         if (r && r.value) {
           const d = JSON.parse(r.value);
           setGeloest(d.geloest || []);
-          setErgebnisse(d.ergebnisse || {});
+          let erg = d.ergebnisse || {};
+          if ((d.regelStand || 0) < REGEL_STAND) {
+            /* Einmalige Nachsicht: was vor dieser Regel erreicht wurde, bleibt. */
+            erg = Object.fromEntries(
+              Object.entries(erg).map(([k, e]) =>
+                e && e.loesung ? [k, { ...e, gnade: true }] : [k, e]
+              )
+            );
+          }
+          setErgebnisse(erg);
           setMut(d.mut || 0);
           setAbzeichen(d.abzeichen || false);
           /* Spielstaende von vor der Namenseingabe gehoeren Florentina — sie soll
@@ -1595,7 +1618,7 @@ function PokemonSchule() {
       try {
         await window.speicher.set(
           SPEICHER_KEY,
-          JSON.stringify({ geloest, ergebnisse, mut, abzeichen, name })
+          JSON.stringify({ geloest, ergebnisse, mut, abzeichen, name, regelStand: REGEL_STAND })
         );
       } catch (e) {
         /* kein Speicher — Spiel laeuft trotzdem */
@@ -1655,21 +1678,29 @@ function PokemonSchule() {
     const standVorher = standVon(a.fuer);
     const schonGeloest = geloest.includes(a.id);
     const standNachher = {
-      anzahl: standVorher.anzahl + (schonGeloest ? 0 : 1),
+      anzahl: standVorher.anzahl + (schonGeloest || zeigLoesung ? 0 : 1),
       ep: standVorher.ep + ep,
     };
     const stufeVorher = stufeVon(pokemon, standVorher);
     const stufeNachher = stufeVon(pokemon, standNachher);
     const hatEntwickelt = stufeVorher.name !== stufeNachher.name;
 
-    setErgebnisse({
-      ...ergebnisse,
-      [a.id]: { ep, ...hilfen, loesung: zeigLoesung },
-    });
+    /* Ein neues Ergebnis ersetzt das alte nur, wenn es nicht schlechter ist.
+       Sonst wuerde ein spaeterer Blick auf den Loesungsweg ein sauber geloestes
+       Raetsel entwerten — und das Pokemon zurueckentwickeln. */
+    const bisher = ergebnisse[a.id];
+    const neuerEintrag = { ep, ...hilfen, loesung: zeigLoesung };
+    const rang = (e) => (e && e.loesung && !e.gnade ? 0 : 1);
+    const nimmNeu =
+      !bisher ||
+      rang(neuerEintrag) > rang(bisher) ||
+      (rang(neuerEintrag) === rang(bisher) && ep >= bisher.ep);
+    if (nimmNeu) setErgebnisse({ ...ergebnisse, [a.id]: neuerEintrag });
     if (!geloest.includes(a.id)) setGeloest([...geloest, a.id]);
 
     setRunde({ ep, pokemon, stufeVorher, stufeNachher, hatEntwickelt,
                ersterVersuch: versuche === 0,
+               nachgeschaut: zeigLoesung,
                falleArt: a.falle ? a.falle.art : null });
     setFeedback(null);
     if (tonAn) { Ton.richtig(); if (hatEntwickelt) setTimeout(() => Ton.entwicklung(), 450); }
@@ -1854,6 +1885,10 @@ function PokemonSchule() {
                     const gesperrt = i > offenIdx && offenIdx !== -1;
                     const p = TEAM_NACH_ID[x.fuer];
                     const stufe = stufeVon(p, standVon(x.fuer));
+                    /* Nachgeschaute Raetsel sichtbar machen, damit sie sie wiederfindet
+                       und selbst loest — dann zaehlen sie fuer die Entwicklung. */
+                    const erg = ergebnisse[x.id];
+                    const nachgeschaut = ok && erg && erg.loesung && !erg.gnade;
                     return (
                       <button
                         key={x.id}
@@ -1865,9 +1900,17 @@ function PokemonSchule() {
                           : "bg-red-600 text-white active:translate-y-0.5"
                         }`}
                       >
-                        <span className="text-2xl">{gesperrt ? "🔒" : stufe.emoji}</span>
+                        <span className="text-2xl">
+                          {gesperrt ? "🔒" : nachgeschaut ? "📖" : stufe.emoji}
+                        </span>
                         <span className="text-[11px]">
-                          {ok ? (ergebnisse[x.id] ? ergebnisse[x.id].ep : 0) + " EP" : gesperrt ? "" : "Rätsel"}
+                          {nachgeschaut
+                            ? "nachgeschaut"
+                            : ok
+                            ? (erg ? erg.ep : 0) + " EP"
+                            : gesperrt
+                            ? ""
+                            : "Rätsel"}
                         </span>
                       </button>
                     );
@@ -2014,10 +2057,24 @@ function PokemonSchule() {
               </div>
             )}
 
-            <p className="mt-4 text-lg font-black text-sky-200">
-              ⭐ +{runde.ep} Erfahrungspunkte
-              {runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"}
-            </p>
+            {runde.nachgeschaut ? (
+              <div className="mt-4 rounded-xl border-2 border-slate-500 bg-slate-900/70 p-4 text-left">
+                <p className="text-base font-black text-slate-100">
+                  📖 Du hast den Lösungsweg angesehen.
+                </p>
+                <p className="mt-2 text-sm text-slate-300">
+                  Das ist völlig in Ordnung — manchmal ist Nachschauen genau richtig.
+                  Für die <b>Entwicklung</b> zählt dieses Rätsel aber nicht, und es gibt
+                  keine EP. Tippe es später auf der Reise-Karte nochmal an (dort steht
+                  dann 📖) und löse es selbst — dann zählt es.
+                </p>
+              </div>
+            ) : (
+              <p className="mt-4 text-lg font-black text-sky-200">
+                ⭐ +{runde.ep} Erfahrungspunkte
+                {runde.ep === EP_MAX_PRO_RAETSEL && " — Höchstwert, ganz allein gelöst!"}
+              </p>
+            )}
             {runde.ersterVersuch && LOB_FUER_FALLE[runde.falleArt] && (
               <p className="mt-2 rounded-xl border border-orange-400/50 bg-orange-400/10 p-3 text-sm font-bold text-orange-200">
                 📖 {LOB_FUER_FALLE[runde.falleArt]}
@@ -2189,9 +2246,14 @@ function PokemonSchule() {
         {!zeigLoesung && (
           <button
             onClick={() => setZeigLoesung(true)}
-            className="mt-3 w-full rounded-xl border border-slate-600 py-2 text-sm text-slate-400"
+            className="mt-3 w-full rounded-xl border border-slate-600 px-3 py-3 text-slate-400"
           >
-            Ich will den ganzen Weg sehen (das ist erlaubt)
+            <span className="text-sm font-bold">Lösungsweg anzeigen</span>
+            <span className="mt-1 block text-[11px] leading-snug">
+              Das ist erlaubt. Aber dann zählt dieses Rätsel nicht für die Entwicklung —
+              {" "}{stufeDerAufgabe.name} bekommt keine EP. Du kannst es später nochmal
+              ohne Lösungsweg probieren.
+            </span>
           </button>
         )}
       </div>

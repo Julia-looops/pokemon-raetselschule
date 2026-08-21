@@ -173,6 +173,35 @@ verpasste Übung.
 - **Ton-Methoden immer am Objekt aufrufen** (`Ton.treffer()`), nie vom Objekt
   gelöst — sonst ist `this` undefiniert und der Fehler bricht mitten im Spielzug ab.
 
+## Nachschauen darf nicht zählen
+
+Bis Version 4.0 gab es ein Loch: die Entwicklung hängt an der ANZAHL gelöster
+Rätsel, und ein Rätsel galt als gelöst, sobald die richtige Zahl eingegeben war —
+auch wenn sie vorher aus dem angezeigten Lösungsweg abgeschrieben wurde. Das Kind
+hat das gefunden und ausgenutzt.
+
+Seit 4.1:
+
+- `anzahlVon()` zählt ein Rätsel nur, wenn `ergebnisse[id].loesung` **nicht** gesetzt
+  ist. Nachgeschaut heißt: 0 EP **und** kein Fortschritt für die Entwicklung.
+- Das Rätsel bleibt trotzdem in `geloest`, damit die Reise weitergeht — sie wird
+  nicht blockiert.
+- Auf der Reise-Karte steht bei solchen Rätseln **📖 nachgeschaut** statt der EP.
+  Antippen öffnet es erneut, mit verborgenem Lösungsweg. Selbst gelöst zählt es.
+- Der Knopf sagt die Folge **vorher**: „Dann zählt dieses Rätsel nicht für die
+  Entwicklung." Keine unsichtbaren Strafen.
+- Ein neues Ergebnis überschreibt ein altes nur, wenn es **nicht schlechter** ist
+  (Rang: selbst gelöst > nachgeschaut, bei gleichem Rang mehr EP). Sonst würde ein
+  späterer Blick auf den Lösungsweg ein sauber gelöstes Rätsel entwerten.
+- **Altfälle werden begnadigt.** Beim Laden eines Spielstands mit
+  `regelStand < REGEL_STAND` bekommen alle vorhandenen nachgeschauten Ergebnisse
+  `gnade: true` und zählen weiter. Schon erreichte Entwicklungen werden niemals
+  rückwirkend weggenommen — das wäre der schlimmere Fehler.
+
+Wer künftig an den Belohnungsregeln dreht: **jede Abkürzung, die ein Kind finden
+kann, wird es finden.** Neue Regeln daran messen, ob Abschreiben, Raten oder
+Wiederholen mehr bringt als Nachdenken.
+
 ## Raten soll sich nicht lohnen
 
 Im Kampf hat sie anfangs so lange geraten, bis eine Zahl passte — die
