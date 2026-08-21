@@ -1,6 +1,6 @@
 # Florentinas Pokémon-Schule — wie man das Spiel ändert
 
-Kopfrechnen bis 100 für die 3. Klasse. **30 Rätsel in 8 Kapiteln.** Gelöste Rätsel
+Kopfrechnen bis 100 für die 3. Klasse. **40 Rätsel in 9 Kapiteln.** Gelöste Rätsel
 lassen Pokémon sich entwickeln, und in der Arena kämpft das Team gegen sechs Gegner.
 
 Das Wichtigste am Spiel sind für das Kind die **Entwicklungen**. Jede Erweiterung
@@ -55,7 +55,7 @@ Die Reihenfolge in `src/game.jsx`:
 2. **Team** (`TEAM`) — neun Pokémon, je mit `stufen` von schwach nach stark.
 3. **EP-Regeln** — `EP_BASIS` 6 pro Rätsel, `EP_BONUS` 2 je nicht gebrauchter
    Hilfe, also höchstens 12.
-4. **Kapitel und Rätsel** (`KAPITEL`, `AUFGABEN`) — 30 Rätsel in 8 Kapiteln. `fuer`
+4. **Kapitel und Rätsel** (`KAPITEL`, `AUFGABEN`) — 40 Rätsel in 9 Kapiteln. `fuer`
    sagt, welches Pokémon trainiert wird, `falle` ist die Lese-Falle (siehe unten).
 5. **Arena** (`ARENA_AB_RAETSEL`, `GEGNER`, Komponente `Arena`).
 6. **Ansichten** (Komponente `PokemonSchule`).
@@ -66,7 +66,7 @@ Das ist der Kern. Sie sind bewusst getrennt — nicht zusammenlegen:
 
 1. **Ein Pokémon kommt erst ins Team, wenn eines seiner Rätsel gelöst ist.**
    `imTeam(stand)` prüft das. Dadurch wächst die Truppe mit dem Fortschritt: nach
-   6 Rätseln kämpfen 5 von 12, nach allen 30 sind alle dabei. Das ist der
+   6 Rätseln kämpfen 5 von 16, nach allen 40 sind alle dabei. Das ist der
    wichtigste Schwierigkeitsregler.
 2. **Die Entwicklung hängt allein an der ANZAHL gelöster Rätsel**, nicht an den EP
    (`stufeVon(pokemon, stand)` nutzt `stand.anzahl`). Wer viele Hilfen braucht,
@@ -102,7 +102,7 @@ im Vorgängerspiel war eine unsichtbare Schwelle der schlimmste Fehler.
 
 ## Rechenarten
 
-Die 30 Rätsel: 25× malnehmen, 22× minus, 10× teilen, 7× plus — meist kombiniert
+Die 40 Rätsel: 29× malnehmen, 25× minus, 16× teilen, 14× plus — meist kombiniert
 über zwei bis drei Schritte. Malnehmen und Teilen bleiben im **kleinen 1×1**
 (Faktoren bis 9, Divisionen gehen glatt auf).
 
@@ -115,9 +115,10 @@ Julias wichtigster Punkt: das Kind soll **kein Muster erkennen**. Sobald ein
 Rechenweg dominiert, hört sie auf zu lesen und rechnet blind nach Schema.
 
 Nach jeder Erweiterung nachzählen, welche Abfolgen von Rechenschritten vorkommen
-(aus den `loesung`-Texten). Stand Version 3.1: **15 verschiedene Rechenwege** bei
-30 Rätseln, häufigstes Muster `×−` mit 7 (23 %), und **kein Muster folgt direkt
-auf sich selbst**.
+(aus den `loesung`-Texten). Stand Version 4.0: **17 verschiedene Rechenwege** bei
+40 Rätseln, häufigstes Muster `×−` mit 7 (18 %), und **kein Muster folgt direkt
+auf sich selbst**. Kapitel 9 hat zehn Rätsel mit zehn verschiedenen Wegen und
+gar kein `×−`.
 
 Zwei Richtwerte:
 
@@ -172,10 +173,25 @@ verpasste Übung.
 - **Ton-Methoden immer am Objekt aufrufen** (`Ton.treffer()`), nie vom Objekt
   gelöst — sonst ist `this` undefiniert und der Fehler bricht mitten im Spielzug ab.
 
+## Raten soll sich nicht lohnen
+
+Im Kampf hat sie anfangs so lange geraten, bis eine Zahl passte — die
+Antwortmöglichkeiten sind klein, das ging schnell. Seit Version 4.0 gilt:
+
+- **Zwei Versuche pro Zug.** Erster Treffer volle Ladung (`LADUNG[0]`), zweiter
+  nur 0,6.
+- **Beim zweiten Fehler ist der Zug verloren** (Phase `verpasst`): kein eigener
+  Angriff, der Gegner schlägt zu, und die richtige Lösung wird gezeigt.
+
+Wichtig: in den **Rätseln** bleiben die Versuche unbegrenzt. Dort geht es ums
+Lernen, mit Hilfen und Fallen-Diagnose — dort wäre eine Sperre falsch. Nur im
+Kampf, wo Tempo zählt, kostet Raten etwas.
+
 ## Balance der Arena
 
 Sechs Gegner: 80 / 115 / 200 / 290 / 400 / 560 KP bei 5 / 8 / 12 / 15 / 18 / 23
-Schaden, nach jedem Sieg heilt das Team 20 KP. Typ-Vorteil verdoppelt den Schaden,
+Schaden, nach jedem Sieg heilt das Team 20 KP. Die Simulation modelliert die zwei
+Versuche pro Zug mit — der verlorene Zug gleicht das gewachsene Team genau aus. Typ-Vorteil verdoppelt den Schaden,
 Abwehr halbiert ihn.
 
 Simuliert mit `scratchpad/sim3.mjs` (400 Durchläufe je Fall). **Dieses Skript liest
@@ -186,9 +202,9 @@ Pokémon-Werten oder der Rätsel-Zuordnung neu laufen lassen.
 | Fortschritt | klug gespielt | unaufmerksam |
 |---|---|---|
 | 6 Rätsel (Marmoria) | 0 %, Wand bei Arbok | 0 % |
-| 15 Rätsel (5 Gegner) | 100 %, 43 Züge | 69 % |
-| alle 30, ohne Hilfe | 100 %, 49 Züge | 57 % |
-| alle 30, viel Hilfe | 99 %, 61 Züge | 2 % |
+| 15 Rätsel (5 Gegner) | 100 %, 46 Züge | 25 % |
+| alle 40, ohne Hilfe | 100 %, 47 Züge | 96 % |
+| alle 40, viel Hilfe | 100 %, 56 Züge | 64 % |
 
 Drei Bedingungen müssen erhalten bleiben, wenn man an den Zahlen dreht:
 

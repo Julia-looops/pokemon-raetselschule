@@ -413,7 +413,7 @@ const {
    Raetsel entwickeln das Team, das Team kaempft in der Arena.
    ============================================================ */
 
-const VERSION = "3.1";
+const VERSION = "4.0";
 
 /* Deutscher Genitiv: Namen auf s, ss, ß, x, z bekommen nur einen Apostroph
    ("Max' Pokémon-Schule"), alle anderen ein s ("Florentinas Pokémon-Schule"). */
@@ -492,6 +492,11 @@ const TYPEN = {
     name: "Boden",
     emoji: "🏜️",
     farbe: "bg-yellow-700 text-white"
+  },
+  drache: {
+    name: "Drache",
+    emoji: "🐲",
+    farbe: "bg-indigo-700 text-white"
   }
 };
 
@@ -504,11 +509,12 @@ const STARK_GEGEN = {
   kaefer: ["pflanze", "psycho"],
   flug: ["kaefer", "kampf", "pflanze"],
   kampf: ["normal", "gestein"],
-  eis: ["flug", "pflanze", "gestein", "boden"],
+  eis: ["flug", "pflanze", "gestein", "boden", "drache"],
   gestein: ["feuer", "flug", "kaefer"],
   gift: ["pflanze"],
   psycho: ["kampf", "gift"],
   boden: ["feuer", "elektro", "gestein"],
+  drache: ["drache"],
   normal: []
 };
 
@@ -745,6 +751,84 @@ const TEAM = [{
   }],
   text: "Hat immer Kopfweh und weiß nie, warum. Trotzdem eine Wucht im Wasser."
 }, {
+  id: "seemon",
+  zeigtGrundform: true,
+  typ: "wasser",
+  attacke: "Blubbstrahl",
+  stufen: [{
+    name: "Seemon",
+    emoji: "🐠",
+    basis: 8,
+    hp: 34
+  }, {
+    name: "Seedra",
+    emoji: "🐡",
+    basis: 14,
+    hp: 48
+  }],
+  text: "Klein und schnell. Spritzt Tinte, wenn ihm etwas nicht passt."
+}, {
+  id: "sichlor",
+  zeigtGrundform: true,
+  typ: "kaefer",
+  attacke: "Sichelschlag",
+  stufen: [{
+    name: "Sichlor",
+    emoji: "🦗",
+    basis: 10,
+    hp: 36
+  }, {
+    name: "Scherox",
+    emoji: "⚔️",
+    basis: 16,
+    hp: 50
+  }],
+  text: "Schneidet Bambus wie Papier. Als Scherox wird es zu Stahl."
+}, {
+  id: "pamo",
+  zeigtGrundform: true,
+  typ: "elektro",
+  attacke: "Faustblitz",
+  stufen: [{
+    name: "Pamo",
+    emoji: "🐹",
+    basis: 7,
+    hp: 30
+  }, {
+    name: "Pamamo",
+    emoji: "🐿️",
+    basis: 12,
+    hp: 40
+  }, {
+    name: "Pamomamo",
+    emoji: "🐿️⚡",
+    basis: 17,
+    hp: 50
+  }],
+  text: "Winziges Fellknäuel — und am Ende ein Boxer mit Stromschlag."
+}, {
+  id: "kapuno",
+  zeigtGrundform: true,
+  typ: "drache",
+  attacke: "Drachenpfeil",
+  stufen: [{
+    name: "Kapuno",
+    emoji: "🥚",
+    basis: 7,
+    hp: 30
+  }, {
+    name: "Kapunoala",
+    emoji: "👻",
+    basis: 12,
+    hp: 42
+  }, {
+    name: "Katapuldra",
+    emoji: "☄️",
+    basis: 19,
+    hp: 54
+  }],
+  text: "Aus dem schüchternen Drachenbaby wird der schnellste Jäger der Höhle."
+}, {
   id: "lapras",
   typ: "eis",
   attacke: "Eisstrahl",
@@ -882,6 +966,10 @@ const KAPITEL = [{
   id: 8,
   titel: "Die Liga von Vertania",
   emoji: "🏆"
+}, {
+  id: 9,
+  titel: "Die Drachenhöhle",
+  emoji: "🐲"
 }];
 const AUFGABEN = [{
   id: 1,
@@ -1388,6 +1476,176 @@ const AUFGABEN = [{
     hinweis: "Bei 45 fehlt die Beere. Der letzte Satz bringt noch 12 Volt.",
     art: "mittendrin"
   }
+}, {
+  id: 31,
+  kap: 9,
+  fuer: "seemon",
+  story: "Am Riff schwimmen 56 Seemon in 8 gleich großen Schwärmen. 6 dieser Schwärme ziehen ins tiefe Wasser.",
+  frage: "Wie viele Seemon ziehen ins tiefe Wasser?",
+  antwort: 42,
+  einheit: "Seemon",
+  blitzlicht: "Wichtig sind 56 Seemon, 8 Schwärme und 6 Schwärme, die wegziehen.",
+  adlerauge: "Gefragt sind die Seemon aus SECHS Schwärmen, nicht aus einem.",
+  denkhilfe: "Zwei Schritte: erst 56 : 8 = ? (ein Schwarm), dann × 6.",
+  loesung: "56 : 8 = 7 Seemon pro Schwarm, und 7 × 6 = 42. Es ziehen 42 Seemon ins tiefe Wasser.",
+  falle: {
+    wert: 7,
+    hinweis: "7 ist EIN Schwarm. Ins tiefe Wasser ziehen aber 6 Schwärme.",
+    art: "mittendrin"
+  }
+}, {
+  id: 32,
+  kap: 9,
+  fuer: "seemon",
+  story: "Seemon sammelt 38 Perlen. Ein Freund bringt 22 weitere dazu. Alle Perlen werden dann gleichmäßig auf 6 Muscheln verteilt.",
+  frage: "Wie viele Perlen liegen in einer Muschel?",
+  antwort: 10,
+  einheit: "Perlen",
+  blitzlicht: "Wichtig sind 38 Perlen, 22 dazu und 6 Muscheln.",
+  adlerauge: "Gefragt ist EINE Muschel, nicht alle Perlen zusammen.",
+  denkhilfe: "Zwei Schritte: erst 38 + 22 = ?, dann : 6.",
+  loesung: "38 + 22 = 60, und 60 : 6 = 10. In jeder Muschel liegen 10 Perlen.",
+  falle: {
+    wert: 60,
+    hinweis: "60 sind alle Perlen zusammen. Sie werden noch auf 6 Muscheln verteilt.",
+    art: "mittendrin"
+  }
+}, {
+  id: 33,
+  kap: 9,
+  fuer: "sichlor",
+  story: "Sichlor bewacht 9 Bambusfelder. 2 Felder sind schon abgeerntet. In jedem Feld, das noch steht, sitzen 8 Raupy.",
+  frage: "Wie viele Raupy sitzen insgesamt in den Feldern?",
+  antwort: 56,
+  einheit: "Raupy",
+  blitzlicht: "Wichtig sind 9 Felder, 2 abgeerntete und 8 Raupy pro stehendem Feld.",
+  adlerauge: "Raupy sitzen nur in den Feldern, die noch STEHEN. Wie viele sind das?",
+  denkhilfe: "Zwei Schritte: erst 9 − 2 = ? (stehende Felder), dann × 8.",
+  loesung: "9 − 2 = 7 stehende Felder, und 7 × 8 = 56. Es sitzen 56 Raupy in den Feldern.",
+  falle: {
+    wert: 70,
+    hinweis: "Du hast alle 9 Felder gerechnet und dann 2 abgezogen. Abgeerntet sind 2 FELDER — dort sitzt niemand mehr.",
+    art: "verlesen"
+  }
+}, {
+  id: 34,
+  kap: 9,
+  fuer: "sichlor",
+  story: "Sichlor schneidet 6 Bambusstangen, jede in 8 Stücke. Die Stücke werden gleichmäßig auf 6 Körbe verteilt.",
+  frage: "Wie viele Stücke liegen in einem Korb?",
+  antwort: 8,
+  einheit: "Stücke",
+  blitzlicht: "Wichtig sind 6 Stangen, 8 Stücke pro Stange und 6 Körbe.",
+  adlerauge: "Gefragt ist EIN Korb. Zuerst musst du wissen, wie viele Stücke es überhaupt sind.",
+  denkhilfe: "Zwei Schritte: erst 6 × 8 = ?, dann : 6.",
+  loesung: "6 × 8 = 48 Stücke, und 48 : 6 = 8. In jedem Korb liegen 8 Stücke.",
+  falle: {
+    wert: 48,
+    hinweis: "48 sind alle Stücke zusammen. Sie werden noch auf 6 Körbe verteilt.",
+    art: "mittendrin"
+  }
+}, {
+  id: 35,
+  kap: 9,
+  fuer: "pamo",
+  story: "Auf der Wiese sitzen 4 Pamo. Kurz darauf hüpfen 3 weitere dazu. Jedes Pamo hat 9 Volt gesammelt.",
+  frage: "Wie viel Volt haben sie alle zusammen?",
+  antwort: 63,
+  einheit: "Volt",
+  blitzlicht: "Wichtig sind 4 Pamo, 3 die dazukommen und 9 Volt pro Pamo.",
+  adlerauge: "Jedes hat 9 Volt — also musst du zuerst wissen, wie viele Pamo es sind.",
+  denkhilfe: "Zwei Schritte: erst 4 + 3 = ? (alle Pamo), dann × 9.",
+  loesung: "4 + 3 = 7 Pamo, und 7 × 9 = 63. Zusammen haben sie 63 Volt.",
+  falle: {
+    wert: 36,
+    hinweis: "Du hast nur die 4 gerechnet, die schon da saßen. 3 hüpfen noch dazu.",
+    art: "mittendrin"
+  }
+}, {
+  id: 36,
+  kap: 9,
+  fuer: "pamo",
+  story: "63 Blitzkugeln werden gleichmäßig auf 9 Pamo verteilt. Ein Pamo verliert beim Rennen 3 seiner Kugeln.",
+  frage: "Wie viele Kugeln hat dieses eine Pamo noch?",
+  antwort: 4,
+  einheit: "Kugeln",
+  blitzlicht: "Wichtig sind 63 Kugeln, 9 Pamo und 3 verlorene.",
+  adlerauge: "Gefragt ist EIN Pamo — das, welches Kugeln verloren hat.",
+  denkhilfe: "Zwei Schritte: erst 63 : 9 = ?, dann davon 3 weg.",
+  loesung: "63 : 9 = 7, und 7 − 3 = 4. Dieses Pamo hat noch 4 Kugeln.",
+  falle: {
+    wert: 60,
+    hinweis: "Du hast 3 von allen Kugeln abgezogen. Erst aufteilen, dann von dem EINEN Pamo abziehen.",
+    art: "rechenart"
+  }
+}, {
+  id: 37,
+  kap: 9,
+  fuer: "pamo",
+  story: "Pamamo hat 74 Volt. Beim weiten Sprung verliert es 28 Volt. An der Ladestation bekommt es 15 Volt zurück. Daneben liegt ein fremder Akku mit 40 Volt, der einem anderen Pokémon gehört.",
+  frage: "Wie viel Volt hat Pamamo am Ende?",
+  antwort: 61,
+  einheit: "Volt",
+  blitzlicht: "Wichtig sind 74, 28 und 15. Die 40 des fremden Akkus stehen auch im Text.",
+  adlerauge: "Gefragt ist die Ladung von PAMAMO. Der fremde Akku gehört nicht dazu.",
+  denkhilfe: "Zwei Schritte: erst 74 − 28 = ?, dann + 15. Die 40 brauchst du nicht.",
+  loesung: "74 − 28 = 46, und 46 + 15 = 61. Pamamo hat 61 Volt.",
+  falle: {
+    wert: 101,
+    hinweis: "Du hast den fremden Akku mit 40 Volt dazugezählt. Der gehört einem anderen Pokémon.",
+    art: "zusatzzahl"
+  }
+}, {
+  id: 38,
+  kap: 9,
+  fuer: "kapuno",
+  story: "In der Drachenhöhle findet Kapuno 7 Nischen mit je 6 Drachenschuppen. Am Höhlenboden liegen noch 19 einzelne Schuppen.",
+  frage: "Wie viele Schuppen hat Kapuno insgesamt gefunden?",
+  antwort: 61,
+  einheit: "Schuppen",
+  blitzlicht: "Wichtig sind 7 Nischen, 6 Schuppen pro Nische und 19 am Boden.",
+  adlerauge: "Gefragt ist die Zahl INSGESAMT — die am Boden gehören dazu.",
+  denkhilfe: "Zwei Schritte: erst 7 × 6 = ?, dann + 19.",
+  loesung: "7 × 6 = 42, und 42 + 19 = 61. Kapuno hat 61 Schuppen gefunden.",
+  falle: {
+    wert: 42,
+    hinweis: "42 sind nur die Schuppen in den Nischen. Die 19 am Boden zählen auch mit.",
+    art: "mittendrin"
+  }
+}, {
+  id: 39,
+  kap: 9,
+  fuer: "kapuno",
+  story: "In der Drachenhöhle liegen 90 Eierschalen. 18 davon sind zerbrochen und werden weggeräumt. Der Rest wird gleichmäßig auf 8 Nester verteilt.",
+  frage: "Wie viele Schalen liegen in einem Nest?",
+  antwort: 9,
+  einheit: "Schalen",
+  blitzlicht: "Wichtig sind 90 Schalen, 18 zerbrochene und 8 Nester.",
+  adlerauge: "Gefragt ist EIN Nest. Und zerbrochene Schalen kommen in kein Nest.",
+  denkhilfe: "Zwei Schritte: erst 90 − 18 = ?, dann : 8.",
+  loesung: "90 − 18 = 72, und 72 : 8 = 9. In jedem Nest liegen 9 Schalen.",
+  falle: {
+    wert: 72,
+    hinweis: "72 sind alle heilen Schalen zusammen. Sie werden noch auf 8 Nester verteilt.",
+    art: "mittendrin"
+  }
+}, {
+  id: 40,
+  kap: 9,
+  fuer: "kapuno",
+  story: "Katapuldra sammelt Kraft: 8 Runden mit je 7 Drachenfunken. Beim Sturzflug verliert es 23 Funken. Zum Schluss schenkt Kapunoala ihm 14 Funken.",
+  frage: "Mit wie vielen Funken tritt Katapuldra an?",
+  antwort: 47,
+  einheit: "Funken",
+  blitzlicht: "Wichtig sind 8 Runden, 7 Funken pro Runde, 23 verlorene und 14 geschenkte.",
+  adlerauge: "Gefragt ist die Zahl AM ENDE — nach dem Verlust UND nach dem Geschenk.",
+  denkhilfe: "Drei Schritte: 8 × 7 = ?, dann davon 23 weg, dann + 14.",
+  loesung: "8 × 7 = 56, dann 56 − 23 = 33, und 33 + 14 = 47. Katapuldra tritt mit 47 Funken an.",
+  falle: {
+    wert: 33,
+    hinweis: "Bei 33 fehlt das Geschenk. Der letzte Satz bringt 14 Funken dazu.",
+    art: "mittendrin"
+  }
 }];
 
 /* ------------------------------------------------------------
@@ -1690,7 +1948,10 @@ function PokemonKarte({
    Immer erreichbar — was sie erarbeitet, macht das Team staerker,
    es entscheidet nicht, ob sie hinein darf.
    ============================================================ */
-const LADUNG = [1, 0.75, 0.5]; // je nach Versuchen
+/* Zwei Versuche pro Zug. Der erste Treffer ist der starke, der zweite schwaecher.
+   Beim zweiten Fehler ist der Zug verloren — sonst lohnt sich Herumraten,
+   und im Kampf soll Nachdenken belohnt werden, nicht Durchprobieren. */
+const LADUNG = [1, 0.6];
 const HEILUNG_NACH_SIEG = 20;
 function Arena({
   standVon,
@@ -1758,10 +2019,24 @@ function Arena({
     const n = parseInt(eingabe, 10);
     if (Number.isNaN(n)) return;
     if (n !== rechnung.loesung) {
-      setVersuche(v => v + 1);
+      if (versuche === 0) {
+        setVersuche(1);
+        setEingabe("");
+        setMeldung("Daneben! Du hast noch EINEN Versuch — danach greift der Gegner an.");
+        if (tonAn) Ton.nochmal();
+        return;
+      }
+      /* Zweiter Fehlversuch: der Zug ist verloren. Damit hoert Raten auf, sich zu
+         lohnen. Die richtige Loesung wird gezeigt, damit sie etwas mitnimmt. */
       setEingabe("");
-      setMeldung("Nicht ganz. Rechne nochmal — dein Angriff wird nur etwas schwächer.");
-      if (tonAn) Ton.nochmal();
+      setVersuche(0);
+      setLetzterZug({
+        art: "verpasst",
+        loesung: rechnung.loesung,
+        wer: aktivStufe.name
+      });
+      if (tonAn) Ton.einstecken();
+      setPhase("verpasst");
       return;
     }
     /* Treffer: Schaden berechnen */
@@ -1911,6 +2186,8 @@ function Arena({
     }, "Typ-Vorteil z\xE4hlt doppelt:"), " Wasser gegen Feuer, Pflanze gegen Gestein, Elektro gegen Flug. Ein ", /*#__PURE__*/React.createElement("span", {
       className: "rounded-full bg-green-500 px-1 text-[10px] font-black text-white"
     }, "\xD72"), " am Pok\xE9mon hei\xDFt: das ist jetzt die richtige Wahl."), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", {
+      className: "text-yellow-300"
+    }, "Zwei Versuche pro Zug:"), " Beim zweiten Fehler greift der Gegner an, ohne dass du zuschl\xE4gst. Raten hilft hier nicht \u2014 einmal genau rechnen ist besser."), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", {
       className: "text-yellow-300"
     }, "Wechseln kostet nichts:"), " Du darfst jederzeit ein anderes Pok\xE9mon nach vorne schicken."), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", {
       className: "text-yellow-300"
@@ -2080,7 +2357,7 @@ function Arena({
     className: "mt-3 rounded-2xl border-2 border-yellow-500/50 bg-slate-800/70 p-5"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-center text-xs font-bold uppercase tracking-widest text-slate-300"
-  }, aktiv.attacke, " aufladen"), /*#__PURE__*/React.createElement("p", {
+  }, aktiv.attacke, " aufladen", versuche === 0 ? " · 1. Versuch" : " · LETZTER Versuch"), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-center text-5xl font-black text-yellow-300"
   }, rechnung.text), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 flex gap-2"
@@ -2116,6 +2393,21 @@ function Arena({
   }, "Sehr effektiv! \xD72"), letzterZug.faktor < 1 && /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-slate-400"
   }, "Nicht sehr effektiv \u2026"), /*#__PURE__*/React.createElement("button", {
+    onClick: gegnerZug,
+    className: "mt-5 w-full rounded-2xl bg-slate-700 px-6 py-4 text-lg font-black text-white"
+  }, gegner.name, " greift an \u2192")), phase === "verpasst" && letzterZug && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 rounded-2xl border-2 border-orange-500/60 bg-slate-800/70 p-5 text-center"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "text-4xl"
+  }, "\uD83D\uDE2E\u200D\uD83D\uDCA8"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-lg font-black text-slate-100"
+  }, letzterZug.wer, " kommt nicht zum Angriff."), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-base text-orange-200"
+  }, "Richtig w\xE4re ", /*#__PURE__*/React.createElement("b", {
+    className: "text-yellow-300"
+  }, letzterZug.loesung), " gewesen."), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-sm text-slate-400"
+  }, "Zwei Versuche pro Zug \u2014 lieber einmal genau rechnen als zweimal raten."), /*#__PURE__*/React.createElement("button", {
     onClick: gegnerZug,
     className: "mt-5 w-full rounded-2xl bg-slate-700 px-6 py-4 text-lg font-black text-white"
   }, gegner.name, " greift an \u2192")), phase === "gegnerGezeigt" && letzterZug && /*#__PURE__*/React.createElement("div", {
